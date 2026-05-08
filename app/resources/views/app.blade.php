@@ -1,37 +1,48 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+        <script>
+            (function() {
+                const appearance = '{{ $appearance ?? "system" }}';
 
-    <title inertia>{{ config('app.name', 'Laravel') }}</title>
+                if (appearance === 'system') {
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+                    if (prefersDark) {
+                        document.documentElement.classList.add('dark');
+                    }
+                }
+            })();
+        </script>
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="shopify-api-key" content="{{ config('shopify.api_key') }}" />
-    <meta name="shopify-shop-origin" content="{{ request()->get('shop') }}" />
-    <meta name="shopify-host" content="{{ request()->get('host') }}" />
-    <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+        {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+        <style>
+            html {
+                background-color: oklch(1 0 0);
+            }
 
-    <!-- Scripts -->
-    @routes
-    <script type="module">
-        import RefreshRuntime from '{{ Vite::asset('') }}@react-refresh'
-        RefreshRuntime.injectIntoGlobalHook(window)
-        window.$RefreshReg$ = () => {}
-        window.$RefreshSig$ = () => (type) => type
-        window.__vite_plugin_react_preamble_installed__ = true
-    </script>
-    @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
-    @inertiaHead
-</head>
+            html.dark {
+                background-color: oklch(0.145 0 0);
+            }
+        </style>
 
-<body class="font-sans antialiased">
-    @inertia
-</body>
+        <link rel="icon" href="/favicon.ico" sizes="any">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+        @fonts
+
+        @viteReactRefresh
+        @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        <x-inertia::head>
+            <title>{{ config('app.name', 'Laravel') }}</title>
+        </x-inertia::head>
+    </head>
+    <body class="font-sans antialiased">
+        <x-inertia::app />
+    </body>
 </html>

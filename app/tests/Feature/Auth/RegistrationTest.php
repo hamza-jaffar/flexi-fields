@@ -1,13 +1,19 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get('/register');
+use Laravel\Fortify\Features;
 
-    $response->assertStatus(200);
+beforeEach(function () {
+    $this->skipUnlessFortifyHas(Features::registration());
+});
+
+test('registration screen can be rendered', function () {
+    $response = $this->get(route('register'));
+
+    $response->assertOk();
 });
 
 test('new users can register', function () {
-    $response = $this->post('/register', [
+    $response = $this->post(route('register.store'), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',

@@ -1,25 +1,14 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use Laravel\Fortify\Features;
 
-Route::redirect('/', '/auth');
+Route::inertia('/', 'welcome', [
+    'canRegister' => Features::enabled(Features::registration()),
+])->name('home');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::prefix('auth')->group(function () {
-    Route::redirect('/', '/app');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__ . '/auth.php';
-require __DIR__ . '/app.php';
+require __DIR__.'/settings.php';
