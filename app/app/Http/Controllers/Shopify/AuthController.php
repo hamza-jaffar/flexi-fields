@@ -7,6 +7,7 @@ use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 /**
  * Class AuthController
@@ -28,7 +29,7 @@ class AuthController extends Controller
         $shopDomain = $request->query('shop');
 
         // Safety Check: If no shop is provided, the request is invalid/external.
-        if (! $shopDomain) {
+        if (!$shopDomain) {
             return response()->json([
                 'error' => 'Missing shop parameter. Please launch the app from Shopify.',
             ], 400);
@@ -79,7 +80,7 @@ class AuthController extends Controller
     {
         $shop = $request->query('shop');
 
-        if (! $shop) {
+        if (!$shop) {
             return response()->json(['error' => 'Missing shop parameter.'], 400);
         }
 
@@ -111,7 +112,11 @@ class AuthController extends Controller
              * Because the app is loaded in an iFrame, we must use JavaScript
              * to redirect the top-level window to Shopify's auth page.
              */
-            return response("<!DOCTYPE html><html><head><script>window.top.location.href = '{$authUrl}';</script></head><body>Redirecting to Shopify...</body></html>");
+            // return response("<!DOCTYPE html><html><head><script>window.top.location.href = '{$authUrl}';</script></head><body>Redirecting to Shopify...</body></html>");
+
+            return Inertia::render('auth/redirect', [
+                'authUrl' => $authUrl
+            ]);
 
         } catch (\Exception $e) {
             Log::error("OAuth Initiation Failed: " . $e->getMessage());
@@ -133,14 +138,14 @@ class AuthController extends Controller
         $state = $request->query('state');
 
         // Security Check 1: Verify the Nonce (State)
-        if (! $state || $state !== session('shopify_nonce')) {
+        if (!$state || $state !== session('shopify_nonce')) {
             Log::warning('Security Alert: Invalid nonce/state detected during callback.');
             return response()->json(['error' => 'Invalid state. Possible CSRF attempt.'], 401);
         }
 
         // Security Check 2: Verify the HMAC Signature
         // This ensures the data sent to this route was signed by Shopify and not tampered with.
-        if (! $this->verifyHmac($params)) {
+        if (!$this->verifyHmac($params)) {
             Log::warning('Security Alert: HMAC verification failed.');
             return response()->json(['error' => 'HMAC verification failed.'], 401);
         }
@@ -202,8 +207,9 @@ class AuthController extends Controller
             // Clean up session security data
             session()->forget('shopify_nonce');
 
-            // Success: Redirect to the main application dashboard
-            return redirect()->route('app.index', $request->query());
+            // Success: Redirect to the Shopify Admin (loads your app inside the iFrame)
+            $apiKey = config('shopify.api_key');
+            return redirect("https://{$shop}/admin/apps/{$apiKey}");
 
         } catch (\Exception $e) {
             Log::error("OAuth Callback Processing Failed: " . $e->getMessage());
@@ -224,12 +230,12 @@ class AuthController extends Controller
         $response = Http::withHeaders([
             'X-Shopify-Access-Token' => $accessToken,
         ])->post("https://{$shop}/admin/api/2024-04/webhooks.json", [
-            'webhook' => [
-                'topic' => 'app/uninstalled',
-                'address' => $webhookUrl,
-                'format' => 'json',
-            ],
-        ]);
+                    'webhook' => [
+                        'topic' => 'app/uninstalled',
+                        'address' => $webhookUrl,
+                        'format' => 'json',
+                    ],
+                ]);
 
         if ($response->successful()) {
             Log::info("Webhook Success: Uninstall listener registered for {$shop}");
