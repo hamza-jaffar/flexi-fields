@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+
+#[Fillable(
+    'shop_domain',
+    'name',
+    'access_token',
+    'refresh_token',
+    'access_token_expires_at',
+    'refresh_token_expires_at',
+    'token_mode',
+    'scopes',
+    'shop_owner_email',
+    'installed_at',
+    'uninstalled_at',
+    'last_synced_at'
+)]
+class Shop extends Model
+{
+    //
+}
