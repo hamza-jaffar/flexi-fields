@@ -17,9 +17,24 @@ use Illuminate\Database\Eloquent\Model;
     'shop_owner_email',
     'installed_at',
     'uninstalled_at',
-    'last_synced_at'
+    'last_synced_at',
+    'credits'
 )]
 class Shop extends Model
 {
-    //
+    /**
+     * Get the active subscription for the shop.
+     */
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->where('status', 'ACTIVE');
+    }
+
+    /**
+     * Get all subscriptions for the shop.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }

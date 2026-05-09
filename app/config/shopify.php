@@ -5,4 +5,5 @@ return [
     'api_secret' => env('SHOPIFY_API_SECRET', ''),
     'scopes' => env('SHOPIFY_SCOPES', 'read_orders,write_orders,read_products,write_products'),
     'redirect_uri' => env('SHOPIFY_REDIRECT_URI', 'APP_URL'),
+    'api_version' => env('SHOPIFY_API_VERSION', '2024-04'),
 ];

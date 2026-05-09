@@ -14,48 +14,60 @@ class VerifyShopifyRequest
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $params = $request->query();
-        $hmac = $request->query('hmac');
         $shopDomain = $request->query('shop');
+        $hmac = $request->query('hmac');
 
-        if (! $shopDomain) {
+        // 1. If we have both shop and hmac, verify the signature and store in session
+        if ($shopDomain && $hmac) {
+            if ($this->verifyHmac($request->query())) {
+                session(['shopify_shop' => $shopDomain]);
+            } else {
+                return response()->json(['error' => 'Invalid signature.'], 401);
+            }
+        }
+
+        // 2. If shop is missing from query, try to get it from session
+        if (!$shopDomain) {
+            $shopDomain = session('shopify_shop');
+        }
+
+        // 3. If we still don't have a shop, it's an invalid request
+        if (!$shopDomain) {
             return response()->json([
                 'error' => 'Missing shop parameter. Please launch the app from Shopify.',
             ], 400);
         }
 
-        // 1. If there's no HMAC, it's not a valid Shopify request
-        if (!$hmac) {
-            return response()->json(['error' => 'Unauthorized source.'], 401);
+        // 4. Verify the shop exists in our database
+        $shop = Shop::where('shop_domain', $shopDomain)->first();
+
+        if (!$shop) {
+            // If the shop is not in our database or uninstalled, we need to authenticate
+            return redirect()->route('auth', ['shop' => $shopDomain]);
         }
 
-        // 2. Remove HMAC from the parameters to calculate the signature
+        return $next($request);
+    }
+
+    /**
+     * Security Helper: HMAC Verification
+     */
+    private function verifyHmac(array $params): bool
+    {
+        $hmac = $params['hmac'] ?? '';
         unset($params['hmac']);
 
-        // 3. Sort parameters lexicographically by key
+        // Alphabetical sort of keys is mandatory for HMAC calculation
         ksort($params);
 
-        // 4. Form the message string (key=value&key2=value2...)
         $pairs = [];
         foreach ($params as $key => $value) {
             $pairs[] = "$key=$value";
         }
         $message = implode('&', $pairs);
 
-        // 5. Hash the message with your App Secret
         $calculatedHmac = hash_hmac('sha256', $message, config('shopify.api_secret'));
 
-        // 6. Compare with the HMAC provided in the request
-        if (!hash_equals($hmac, $calculatedHmac)) {
-            return response()->json(['error' => 'Invalid signature.'], 401);
-        }
-
-        $shop = Shop::where('shop_domain', $shopDomain)->first();
-
-        if (! $shop) {
-            return redirect()->route('auth', $request->query());
-        }
-
-        return $next($request);
+        return hash_equals($hmac, $calculatedHmac);
     }
 }
