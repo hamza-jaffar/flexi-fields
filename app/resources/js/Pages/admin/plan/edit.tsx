@@ -16,10 +16,24 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import planRoutes from '@/routes/plan';
+
+interface FeatureDef {
+    key: string;
+    label: string;
+    type: 'boolean' | 'limit';
+    input: 'toggle' | 'number';
+    default: any;
+    description: string;
+}
+
+interface GroupedFeatures {
+    [groupName: string]: FeatureDef[];
+}
 
 interface Plan {
     id: number;
@@ -28,6 +42,10 @@ interface Plan {
     price: string | number;
     discounted_price: string | number | null;
     currency: string;
+    billing_interval: string;
+    trial_days: number;
+    is_active: boolean;
+    is_featured: boolean;
     internal_features: any;
     display_features: any;
     button_text: string;
@@ -35,9 +53,28 @@ interface Plan {
 
 interface Props {
     plan: Plan;
+    groupedFeatures: GroupedFeatures;
 }
 
-const PlanEdit = ({ plan }: Props) => {
+const PlanEdit = ({ plan, groupedFeatures }: Props) => {
+    // Generate initial normalized values by combining DB values and enum defaults
+    const getInitialInternalFeatures = () => {
+        const existingFeatures = Array.isArray(plan.internal_features) 
+            ? plan.internal_features 
+            : [];
+            
+        // Convert the old format or fill missing fields with defaults
+        return Object.values(groupedFeatures).flat().map(feature => {
+            const existing = existingFeatures.find((f: any) => f.feature_key === feature.key);
+            
+            return {
+                feature_key: feature.key,
+                feature_type: feature.type,
+                feature_value: existing !== undefined ? existing.feature_value : feature.default
+            };
+        });
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         name: plan.name,
         handle: plan.handle,
@@ -48,13 +85,7 @@ const PlanEdit = ({ plan }: Props) => {
         trial_days: plan.trial_days,
         is_active: plan.is_active,
         is_featured: plan.is_featured,
-        internal_features: Array.isArray(plan.internal_features)
-            ? plan.internal_features
-            : plan.internal_features
-              ? Object.entries(plan.internal_features).map(
-                    ([k, v]) => `${k}: ${v}`,
-                )
-              : [''],
+        internal_features: getInitialInternalFeatures(),
         display_features: Array.isArray(plan.display_features)
             ? plan.display_features
             : [''],
@@ -66,30 +97,33 @@ const PlanEdit = ({ plan }: Props) => {
         put(planRoutes.update(plan.id).url);
     };
 
-    const addFeature = (type: 'internal' | 'display') => {
-        const field =
-            type === 'internal' ? 'internal_features' : 'display_features';
-        setData(field, [...data[field], '']);
+    const addDisplayFeature = () => {
+        setData('display_features', [...data.display_features, '']);
     };
 
-    const removeFeature = (type: 'internal' | 'display', index: number) => {
-        const field =
-            type === 'internal' ? 'internal_features' : 'display_features';
-        const newFeatures = [...data[field]];
+    const removeDisplayFeature = (index: number) => {
+        const newFeatures = [...data.display_features];
         newFeatures.splice(index, 1);
-        setData(field, newFeatures);
+        setData('display_features', newFeatures);
     };
 
-    const updateFeature = (
-        type: 'internal' | 'display',
-        index: number,
-        value: string,
-    ) => {
-        const field =
-            type === 'internal' ? 'internal_features' : 'display_features';
-        const newFeatures = [...data[field]];
+    const updateDisplayFeature = (index: number, value: string) => {
+        const newFeatures = [...data.display_features];
         newFeatures[index] = value;
-        setData(field, newFeatures);
+        setData('display_features', newFeatures);
+    };
+
+    const updateInternalFeature = (key: string, value: any) => {
+        const newFeatures = [...data.internal_features];
+        const featureIndex = newFeatures.findIndex(f => f.feature_key === key);
+        if (featureIndex >= 0) {
+            newFeatures[featureIndex].feature_value = value;
+            setData('internal_features', newFeatures);
+        }
+    };
+
+    const getFeatureValue = (key: string) => {
+        return data.internal_features.find((f: any) => f.feature_key === key)?.feature_value;
     };
 
     return (
@@ -281,12 +315,28 @@ const PlanEdit = ({ plan }: Props) => {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Features & Settings</CardTitle>
+                            <CardTitle>Display Settings</CardTitle>
                             <CardDescription>
-                                Configure features and visibility.
+                                Configure frontend visibility and public features.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid gap-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="button_text">Call to Action Button Text</Label>
+                                <Input
+                                    id="button_text"
+                                    value={data.button_text}
+                                    onChange={(e) =>
+                                        setData('button_text', e.target.value)
+                                    }
+                                />
+                                {errors.button_text && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.button_text}
+                                    </p>
+                                )}
+                            </div>
+
                             <div className="grid gap-4">
                                 <Label>
                                     Display Features (Shown on pricing table)
@@ -296,8 +346,7 @@ const PlanEdit = ({ plan }: Props) => {
                                         <Input
                                             value={feature}
                                             onChange={(e) =>
-                                                updateFeature(
-                                                    'display',
+                                                updateDisplayFeature(
                                                     index,
                                                     e.target.value,
                                                 )
@@ -305,9 +354,10 @@ const PlanEdit = ({ plan }: Props) => {
                                             placeholder="e.g. Unlimited Fields"
                                         />
                                         <Button
+                                            type="button"
                                             size="icon"
                                             onClick={() =>
-                                                removeFeature('display', index)
+                                                removeDisplayFeature(index)
                                             }
                                             disabled={
                                                 data.display_features.length ===
@@ -323,78 +373,14 @@ const PlanEdit = ({ plan }: Props) => {
                                     variant="link"
                                     size="sm"
                                     className="w-fit"
-                                    onClick={() => addFeature('display')}
+                                    onClick={addDisplayFeature}
                                 >
                                     <Plus className="mr-2 h-4 w-4" /> Add
                                     Display Feature
                                 </Button>
                             </div>
 
-                            <div className="grid gap-4">
-                                <Label>
-                                    Internal Features (Technical limits/configs)
-                                </Label>
-                                {data.internal_features.map(
-                                    (feature, index) => (
-                                        <div key={index} className="flex gap-2">
-                                            <Input
-                                                value={feature}
-                                                onChange={(e) =>
-                                                    updateFeature(
-                                                        'internal',
-                                                        index,
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="e.g. max_fields: 10"
-                                            />
-                                            <Button
-                                                size="icon"
-                                                onClick={() =>
-                                                    removeFeature(
-                                                        'internal',
-                                                        index,
-                                                    )
-                                                }
-                                                disabled={
-                                                    data.internal_features
-                                                        .length === 1
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    ),
-                                )}
-                                <Button
-                                    variant="link"
-                                    type="button"
-                                    size="sm"
-                                    className="w-fit"
-                                    onClick={() => addFeature('internal')}
-                                >
-                                    <Plus className="mr-2 h-4 w-4" /> Add
-                                    Internal Feature
-                                </Button>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="button_text">Button Text</Label>
-                                <Input
-                                    id="button_text"
-                                    value={data.button_text}
-                                    onChange={(e) =>
-                                        setData('button_text', e.target.value)
-                                    }
-                                />
-                                {errors.button_text && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.button_text}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex gap-6">
+                            <div className="flex gap-6 mt-4">
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="is_active"
@@ -414,15 +400,58 @@ const PlanEdit = ({ plan }: Props) => {
                                         }
                                     />
                                     <Label htmlFor="is_featured">
-                                        Is Featured (Highlighted UI)
+                                        Is Featured (Highlighted on pricing page)
                                     </Label>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="flex justify-end gap-4">
-                        <Button variant="link" asChild>
+                    {/* Dynamic Feature Groups */}
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {Object.entries(groupedFeatures).map(([groupName, features]) => (
+                            <Card key={groupName} className="h-fit">
+                                <CardHeader>
+                                    <CardTitle>{groupName}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="grid gap-6">
+                                    {features.map((feature) => (
+                                        <div key={feature.key} className="flex flex-col gap-2">
+                                            {feature.input === 'toggle' ? (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex flex-col gap-1 pr-4">
+                                                        <Label htmlFor={`feature-${feature.key}`}>{feature.label}</Label>
+                                                        <span className="text-xs text-muted-foreground">{feature.description}</span>
+                                                    </div>
+                                                    <Switch
+                                                        id={`feature-${feature.key}`}
+                                                        checked={!!getFeatureValue(feature.key)}
+                                                        onCheckedChange={(checked) => updateInternalFeature(feature.key, checked)}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="grid gap-2">
+                                                    <div className="flex flex-col gap-1">
+                                                        <Label htmlFor={`feature-${feature.key}`}>{feature.label}</Label>
+                                                        <span className="text-xs text-muted-foreground">{feature.description}</span>
+                                                    </div>
+                                                    <Input
+                                                        id={`feature-${feature.key}`}
+                                                        type="number"
+                                                        value={getFeatureValue(feature.key) ?? ''}
+                                                        onChange={(e) => updateInternalFeature(feature.key, parseInt(e.target.value) || 0)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <div className="sticky bottom-0 bg-background/90 p-4 border-t flex justify-end gap-4 z-10">
+                        <Button variant="link" asChild type="button">
                             <Link href={planRoutes.index().url}>Cancel</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>

@@ -13,9 +13,12 @@ export default function ShopifyLayout({
     return (
         <AppProvider i18n={enTranslations}>
             <NavMenu>
-                <Link href="/app">Home</Link>
+                <Link href="/app" rel="home">
+                    Home
+                </Link>
+                <Link href="/app/custom-field">Custom Fields</Link>
                 <Link href="/app/billing">Billing</Link>
-                <Link href="/app/settings">Settings</Link>
+                {/* <Link href="/app/settings">Settings</Link> */}
             </NavMenu>
             <Frame>{children}</Frame>
         </AppProvider>

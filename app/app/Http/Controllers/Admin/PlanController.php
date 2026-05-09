@@ -46,7 +46,9 @@ class PlanController extends Controller
      */
     public function create()
     {
-        return Inertia::render('admin/plan/create');
+        return Inertia::render('admin/plan/create', [
+            'groupedFeatures' => \App\Enums\PlanFeature::groupedFeatures(),
+        ]);
     }
 
     /**
@@ -80,7 +82,8 @@ class PlanController extends Controller
     public function edit(Plan $plan)
     {
         return Inertia::render('admin/plan/edit', [
-            'plan' => $plan
+            'plan' => $plan,
+            'groupedFeatures' => \App\Enums\PlanFeature::groupedFeatures(),
         ]);
     }
 

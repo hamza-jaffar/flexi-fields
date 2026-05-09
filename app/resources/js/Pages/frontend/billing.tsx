@@ -14,11 +14,7 @@ import {
     Grid,
     ButtonGroup,
 } from '@shopify/polaris';
-import {
-    CheckIcon,
-    StarFilledIcon,
-    MagicIcon,
-} from '@shopify/polaris-icons';
+import { CheckIcon, StarFilledIcon, MagicIcon } from '@shopify/polaris-icons';
 import React, { useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import app from '@/routes/app';
@@ -54,9 +50,11 @@ interface Props {
 
 const Billing = ({ plans, current_shop }: Props) => {
     const { shopify } = usePage().props as any;
-    
+
     // Determine if we have any yearly plans to show the toggle
-    const hasYearlyPlans = plans.some(p => p.billing_interval === 'EVERY_12_MONTHS');
+    const hasYearlyPlans = plans.some(
+        (p) => p.billing_interval === 'EVERY_12_MONTHS',
+    );
     const [isYearly, setIsYearly] = useState(false);
 
     // Filter plans based on interval toggle
@@ -70,7 +68,9 @@ const Billing = ({ plans, current_shop }: Props) => {
     const displayPlans = filteredPlans.length > 0 ? filteredPlans : plans;
 
     const handleSelectPlan = (planId: number) => {
-        const shop = shopify?.shop || new URLSearchParams(window.location.search).get('shop');
+        const shop =
+            shopify?.shop ||
+            new URLSearchParams(window.location.search).get('shop');
         const url = app.billing.subscribe({ plan: planId, shop } as any).url;
         window.open(url, '_top');
     };
@@ -83,21 +83,46 @@ const Billing = ({ plans, current_shop }: Props) => {
                     <Layout.Section>
                         <Box paddingBlockEnd="800" paddingBlockStart="400">
                             <BlockStack gap="400" inlineAlign="center">
-                                <Text variant="heading3xl" as="h1" fontWeight="bold" alignment="center">
+                                <Text
+                                    variant="heading3xl"
+                                    as="h1"
+                                    fontWeight="bold"
+                                    alignment="center"
+                                >
                                     Choose the right plan for your store
                                 </Text>
-                                <Text as="p" variant="bodyLg" tone="subdued" alignment="center">
-                                    Unlock advanced features and scale your business. All paid plans include a 7-day free trial.
+                                <Text
+                                    as="p"
+                                    variant="bodyLg"
+                                    tone="subdued"
+                                    alignment="center"
+                                >
+                                    Unlock advanced features and scale your
+                                    business. All paid plans include a 7-day
+                                    free trial.
                                 </Text>
-                                
+
                                 {hasYearlyPlans && (
                                     <Box paddingBlockStart="400">
                                         <ButtonGroup variant="segmented">
-                                            <Button pressed={!isYearly} onClick={() => setIsYearly(false)}>
+                                            <Button
+                                                pressed={!isYearly}
+                                                onClick={() =>
+                                                    setIsYearly(false)
+                                                }
+                                            >
                                                 Monthly billing
                                             </Button>
-                                            <Button pressed={isYearly} onClick={() => setIsYearly(true)}>
-                                                Yearly billing <Badge tone="success">Save 20%</Badge>
+                                            <Button
+                                                pressed={isYearly}
+                                                onClick={() =>
+                                                    setIsYearly(true)
+                                                }
+                                            >
+                                                Yearly billing
+                                                {/* <Badge tone="success">
+                                                    Save 20%
+                                                </Badge> */}
                                             </Button>
                                         </ButtonGroup>
                                     </Box>
@@ -109,32 +134,94 @@ const Billing = ({ plans, current_shop }: Props) => {
                     <Layout.Section>
                         <Grid>
                             {displayPlans.map((plan) => {
-                                const isCurrentPlan = current_shop.subscription?.plan?.id === plan.id;
-                                
+                                const isCurrentPlan =
+                                    current_shop.subscription?.plan?.id ===
+                                    plan.id;
+
                                 return (
-                                    <Grid.Cell key={plan.id} columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}>
-                                        <Box minHeight="100%" paddingBlockEnd="400">
-                                            <Card background={plan.is_featured ? "bg-surface-secondary" : "bg-surface"}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '350px' }}>
+                                    <Grid.Cell
+                                        key={plan.id}
+                                        columnSpan={{
+                                            xs: 6,
+                                            sm: 6,
+                                            md: 4,
+                                            lg: 4,
+                                            xl: 4,
+                                        }}
+                                    >
+                                        <Box
+                                            minHeight="100%"
+                                            paddingBlockEnd="400"
+                                        >
+                                            <Card
+                                                background={
+                                                    plan.is_featured
+                                                        ? 'bg-surface-secondary'
+                                                        : 'bg-surface'
+                                                }
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        height: '100%',
+                                                        minHeight: '350px',
+                                                    }}
+                                                >
                                                     <BlockStack gap="100">
-                                                        <InlineStack align="space-between" blockAlign="center">
-                                                            <Text variant="headingLg" as="h3" fontWeight="bold">
+                                                        <InlineStack
+                                                            align="space-between"
+                                                            blockAlign="center"
+                                                        >
+                                                            <Text
+                                                                variant="headingLg"
+                                                                as="h3"
+                                                                fontWeight="bold"
+                                                            >
                                                                 {plan.name}
                                                             </Text>
-                                                            {plan.is_featured && <Badge tone="magic">Most Popular</Badge>}
+                                                            {plan.is_featured && (
+                                                                <Badge tone="magic">
+                                                                    Most Popular
+                                                                </Badge>
+                                                            )}
                                                         </InlineStack>
 
                                                         <Box paddingBlockEnd="400">
-                                                            <InlineStack gap="0" blockAlign="baseline">
-                                                                <Text variant="heading3xl" as="p" fontWeight="bold">
-                                                                    {parseFloat(plan.price) === 0 ? 'Free' : `$${plan.discounted_price || plan.price}`}
+                                                            <InlineStack
+                                                                gap="0"
+                                                                blockAlign="baseline"
+                                                            >
+                                                                <Text
+                                                                    variant="heading3xl"
+                                                                    as="p"
+                                                                    fontWeight="bold"
+                                                                >
+                                                                    {parseFloat(
+                                                                        plan.price,
+                                                                    ) === 0
+                                                                        ? 'Free'
+                                                                        : `$${plan.discounted_price || plan.price}`}
                                                                 </Text>
-                                                                {parseFloat(plan.price) > 0 ? (
-                                                                    <Text as="span" variant="bodyMd" tone="subdued">
-                                                                        /{isYearly ? 'year' : 'month'}
+                                                                {parseFloat(
+                                                                    plan.price,
+                                                                ) > 0 ? (
+                                                                    <Text
+                                                                        as="span"
+                                                                        variant="bodyMd"
+                                                                        tone="subdued"
+                                                                    >
+                                                                        /
+                                                                        {isYearly
+                                                                            ? 'year'
+                                                                            : 'month'}
                                                                     </Text>
                                                                 ) : (
-                                                                    <Text as="span" variant="bodyMd" tone="subdued">
+                                                                    <Text
+                                                                        as="span"
+                                                                        variant="bodyMd"
+                                                                        tone="subdued"
+                                                                    >
                                                                         /
                                                                     </Text>
                                                                 )}
@@ -142,30 +229,60 @@ const Billing = ({ plans, current_shop }: Props) => {
                                                         </Box>
 
                                                         <BlockStack gap="200">
-                                                            {plan.display_features.map((feature, i) => (
-                                                                <Text key={i} as="p" variant="bodyMd" tone="subdued">
-                                                                    {feature}
-                                                                </Text>
-                                                            ))}
+                                                            {plan.display_features.map(
+                                                                (
+                                                                    feature,
+                                                                    i,
+                                                                ) => (
+                                                                    <Text
+                                                                        key={i}
+                                                                        as="p"
+                                                                        variant="bodyMd"
+                                                                        tone="subdued"
+                                                                    >
+                                                                        {
+                                                                            feature
+                                                                        }
+                                                                    </Text>
+                                                                ),
+                                                            )}
                                                         </BlockStack>
                                                     </BlockStack>
-                                                    
-                                                    <div style={{ flexGrow: 1 }} />
-                                                    
+
+                                                    <div
+                                                        style={{ flexGrow: 1 }}
+                                                    />
+
                                                     <Box paddingBlockStart="600">
                                                         {isCurrentPlan ? (
-                                                            <Button fullWidth disabled size="large">
+                                                            <Button
+                                                                fullWidth
+                                                                disabled
+                                                                size="large"
+                                                            >
                                                                 Current Plan
                                                             </Button>
                                                         ) : (
                                                             <Button
                                                                 fullWidth
                                                                 variant="primary"
-                                                                tone={plan.is_featured ? "success" : undefined}
+                                                                tone={
+                                                                    plan.is_featured
+                                                                        ? 'success'
+                                                                        : undefined
+                                                                }
                                                                 size="large"
-                                                                onClick={() => handleSelectPlan(plan.id)}
+                                                                onClick={() =>
+                                                                    handleSelectPlan(
+                                                                        plan.id,
+                                                                    )
+                                                                }
                                                             >
-                                                                {parseFloat(plan.price) === 0 ? 'Get started' : 'Start free trial'}
+                                                                {parseFloat(
+                                                                    plan.price,
+                                                                ) === 0
+                                                                    ? 'Get started'
+                                                                    : 'Start free trial'}
                                                             </Button>
                                                         )}
                                                     </Box>
@@ -175,83 +292,7 @@ const Billing = ({ plans, current_shop }: Props) => {
                                     </Grid.Cell>
                                 );
                             })}
-                            
-                            {/* Enterprise Card */}
-                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}>
-                                <Box minHeight="100%" paddingBlockEnd="400">
-                                    <Card>
-                                        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '350px' }}>
-                                            <BlockStack gap="100">
-                                                <Text variant="headingLg" as="h3" fontWeight="bold">
-                                                    Enterprise
-                                                </Text>
-
-                                                <Box paddingBlockEnd="400">
-                                                    <Text variant="heading3xl" as="p" fontWeight="bold">
-                                                        Custom
-                                                    </Text>
-                                                </Box>
-
-                                                <BlockStack gap="200">
-                                                    <Text as="p" variant="bodyMd" tone="subdued">Unlimited custom fields</Text>
-                                                    <Text as="p" variant="bodyMd" tone="subdued">White-glove onboarding</Text>
-                                                    <Text as="p" variant="bodyMd" tone="subdued">Dedicated account manager</Text>
-                                                    <Text as="p" variant="bodyMd" tone="subdued">SLA & Priority Support</Text>
-                                                </BlockStack>
-                                            </BlockStack>
-                                            
-                                            <div style={{ flexGrow: 1 }} />
-                                            
-                                            <Box paddingBlockStart="600">
-                                                <Button fullWidth size="large" variant="primary">
-                                                    Contact Sales
-                                                </Button>
-                                            </Box>
-                                        </div>
-                                    </Card>
-                                </Box>
-                            </Grid.Cell>
                         </Grid>
-                    </Layout.Section>
-
-                    <Layout.Section>
-                        <Box paddingBlockStart="800">
-                            <Divider />
-                        </Box>
-                    </Layout.Section>
-
-                    <Layout.Section variant="oneHalf">
-                        <Box paddingBlockStart="400">
-                            <Card padding="500">
-                                <BlockStack gap="400">
-                                    <Text variant="headingMd" as="h2">Account Balance</Text>
-                                    <InlineStack gap="400" blockAlign="center">
-                                        <Icon source={StarFilledIcon} tone="warning" />
-                                        <Text variant="heading2xl" as="p">{current_shop.credits.toLocaleString()}</Text>
-                                    </InlineStack>
-                                    <Button variant="plain">Buy more credits</Button>
-                                </BlockStack>
-                            </Card>
-                        </Box>
-                    </Layout.Section>
-
-                    <Layout.Section variant="oneHalf">
-                        <Box paddingBlockStart="400">
-                            <Card padding="500">
-                                <BlockStack gap="400">
-                                    <Text variant="headingMd" as="h2">Active Subscription</Text>
-                                    <InlineStack gap="400" blockAlign="center">
-                                        <Icon source={MagicIcon} tone="info" />
-                                        <Text variant="heading2xl" as="p">{current_shop.subscription?.plan?.name || 'Free Plan'}</Text>
-                                    </InlineStack>
-                                    <Text as="p" tone="subdued">
-                                        {current_shop.subscription?.status === 'ACTIVE' 
-                                            ? 'Your subscription is currently active.' 
-                                            : 'Upgrade your plan to unlock more features.'}
-                                    </Text>
-                                </BlockStack>
-                            </Card>
-                        </Box>
                     </Layout.Section>
                 </Layout>
             </Page>
