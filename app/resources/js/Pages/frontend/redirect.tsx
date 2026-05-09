@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Text, Page, Spinner, BlockStack } from '@shopify/polaris';
+import ShopifyLayout from '@/layouts/shopify-layout';
 
 export default function RedirectPage({ authUrl }: { authUrl: string }) {
     useEffect(() => {
@@ -15,13 +16,17 @@ export default function RedirectPage({ authUrl }: { authUrl: string }) {
     }, [authUrl]);
 
     return (
-        <Page>
-            <BlockStack inlineAlign="center">
-                <Spinner size="large" />
-                <Text as="p" variant="bodyMd">
-                    Connecting to Shopify...
-                </Text>
-            </BlockStack>
-        </Page>
+        <ShopifyLayout>
+            <Page>
+                <BlockStack inlineAlign="center">
+                    <Spinner size="small" />
+                    <Text as="p" variant="bodyMd">
+                        Connecting to Shopify...
+                    </Text>
+                </BlockStack>
+            </Page>
+        </ShopifyLayout>
     );
 }
+
+RedirectPage.layout = null;

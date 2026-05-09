@@ -114,7 +114,7 @@ class AuthController extends Controller
              */
             // return response("<!DOCTYPE html><html><head><script>window.top.location.href = '{$authUrl}';</script></head><body>Redirecting to Shopify...</body></html>");
 
-            return Inertia::render('auth/redirect', [
+            return Inertia::render('frontend/redirect', [
                 'authUrl' => $authUrl
             ]);
 
