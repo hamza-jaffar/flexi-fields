@@ -12,12 +12,12 @@ import {
     Icon,
     Divider,
     Grid,
+    ButtonGroup,
 } from '@shopify/polaris';
 import {
-    StarFilledIcon,
     CheckIcon,
+    StarFilledIcon,
     MagicIcon,
-    AppsIcon,
 } from '@shopify/polaris-icons';
 import React, { useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
@@ -54,6 +54,9 @@ interface Props {
 
 const Billing = ({ plans, current_shop }: Props) => {
     const { shopify } = usePage().props as any;
+    
+    // Determine if we have any yearly plans to show the toggle
+    const hasYearlyPlans = plans.some(p => p.billing_interval === 'EVERY_12_MONTHS');
     const [isYearly, setIsYearly] = useState(false);
 
     // Filter plans based on interval toggle
@@ -63,322 +66,192 @@ const Billing = ({ plans, current_shop }: Props) => {
             : p.billing_interval === 'EVERY_30_DAYS',
     );
 
+    // If no plans for the selected interval, just show the ones we have
     const displayPlans = filteredPlans.length > 0 ? filteredPlans : plans;
 
     const handleSelectPlan = (planId: number) => {
-        const shop =
-            shopify?.shop ||
-            new URLSearchParams(window.location.search).get('shop');
-        // Change line 70 to this:
+        const shop = shopify?.shop || new URLSearchParams(window.location.search).get('shop');
         const url = app.billing.subscribe({ plan: planId, shop } as any).url;
-
-        // Use window.open with _top to ensure we break out of the iframe for Shopify payment
         window.open(url, '_top');
     };
 
     return (
         <ShopifyLayout>
-            <Head title="Billing & Plans" />
-            <Page title="Billing & Plans">
+            <Head title="Choose your plan" />
+            <Page>
                 <Layout>
-                    {/* Header Section */}
                     <Layout.Section>
-                        <Box paddingBlockEnd="600">
-                            <BlockStack gap="400">
-                                <Text
-                                    variant="heading2xl"
-                                    as="h1"
-                                    fontWeight="bold"
-                                >
-                                    Upgrade your experience
+                        <Box paddingBlockEnd="800" paddingBlockStart="400">
+                            <BlockStack gap="400" inlineAlign="center">
+                                <Text variant="heading3xl" as="h1" fontWeight="bold" alignment="center">
+                                    Choose the right plan for your store
                                 </Text>
-                                <Text as="p" variant="bodyLg" tone="subdued">
-                                    Select the plan that fits your business
-                                    needs. All plans include a 7-day free trial.
+                                <Text as="p" variant="bodyLg" tone="subdued" alignment="center">
+                                    Unlock advanced features and scale your business. All paid plans include a 7-day free trial.
                                 </Text>
+                                
+                                {hasYearlyPlans && (
+                                    <Box paddingBlockStart="400">
+                                        <ButtonGroup variant="segmented">
+                                            <Button pressed={!isYearly} onClick={() => setIsYearly(false)}>
+                                                Monthly billing
+                                            </Button>
+                                            <Button pressed={isYearly} onClick={() => setIsYearly(true)}>
+                                                Yearly billing <Badge tone="success">Save 20%</Badge>
+                                            </Button>
+                                        </ButtonGroup>
+                                    </Box>
+                                )}
                             </BlockStack>
                         </Box>
                     </Layout.Section>
 
-                    {/* Pricing Grid */}
                     <Layout.Section>
                         <Grid>
-                            {displayPlans.map((plan) => (
-                                <Grid.Cell
-                                    key={plan.id}
-                                    columnSpan={{
-                                        xs: 6,
-                                        sm: 6,
-                                        md: 3,
-                                        lg: 4,
-                                        xl: 4,
-                                    }}
-                                >
-                                    <Box minHeight="100%" paddingBlockEnd="400">
-                                        <Card padding="500">
-                                            <BlockStack gap="500">
-                                                <BlockStack gap="200">
-                                                    <InlineStack align="space-between">
-                                                        <Text
-                                                            variant="headingLg"
-                                                            as="h3"
-                                                            fontWeight="bold"
-                                                        >
-                                                            {plan.name}
-                                                        </Text>
-                                                        {plan.is_featured && (
-                                                            <Badge tone="success">
-                                                                Popular
-                                                            </Badge>
-                                                        )}
-                                                    </InlineStack>
-                                                    <Text
-                                                        as="p"
-                                                        variant="bodySm"
-                                                        tone="subdued"
-                                                    >
-                                                        Perfect for growing
-                                                        businesses
-                                                    </Text>
-                                                </BlockStack>
+                            {displayPlans.map((plan) => {
+                                const isCurrentPlan = current_shop.subscription?.plan?.id === plan.id;
+                                
+                                return (
+                                    <Grid.Cell key={plan.id} columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}>
+                                        <Box minHeight="100%" paddingBlockEnd="400">
+                                            <Card background={plan.is_featured ? "bg-surface-secondary" : "bg-surface"}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '350px' }}>
+                                                    <BlockStack gap="100">
+                                                        <InlineStack align="space-between" blockAlign="center">
+                                                            <Text variant="headingLg" as="h3" fontWeight="bold">
+                                                                {plan.name}
+                                                            </Text>
+                                                            {plan.is_featured && <Badge tone="magic">Most Popular</Badge>}
+                                                        </InlineStack>
 
-                                                <InlineStack
-                                                    gap="100"
-                                                    blockAlign="end"
-                                                >
-                                                    <Text
-                                                        variant="heading3xl"
-                                                        as="p"
-                                                        fontWeight="bold"
-                                                    >
-                                                        {parseFloat(
-                                                            plan.price,
-                                                        ) === 0
-                                                            ? 'Free'
-                                                            : `$${plan.discounted_price || plan.price}`}
-                                                    </Text>
-                                                    {parseFloat(plan.price) >
-                                                        0 && (
-                                                        <Text
-                                                            as="p"
-                                                            variant="bodyMd"
-                                                            tone="subdued"
-                                                        >
-                                                            /{' '}
-                                                            {isYearly
-                                                                ? 'year'
-                                                                : 'month'}
-                                                        </Text>
-                                                    )}
-                                                </InlineStack>
+                                                        <Box paddingBlockEnd="400">
+                                                            <InlineStack gap="0" blockAlign="baseline">
+                                                                <Text variant="heading3xl" as="p" fontWeight="bold">
+                                                                    {parseFloat(plan.price) === 0 ? 'Free' : `$${plan.discounted_price || plan.price}`}
+                                                                </Text>
+                                                                {parseFloat(plan.price) > 0 ? (
+                                                                    <Text as="span" variant="bodyMd" tone="subdued">
+                                                                        /{isYearly ? 'year' : 'month'}
+                                                                    </Text>
+                                                                ) : (
+                                                                    <Text as="span" variant="bodyMd" tone="subdued">
+                                                                        /
+                                                                    </Text>
+                                                                )}
+                                                            </InlineStack>
+                                                        </Box>
 
-                                                <Divider />
-
-                                                <BlockStack gap="300">
-                                                    {plan.display_features.map(
-                                                        (feature, i) => (
-                                                            <InlineStack
-                                                                key={i}
-                                                                gap="200"
-                                                                blockAlign="center"
-                                                            >
-                                                                <Icon
-                                                                    source={
-                                                                        CheckIcon
-                                                                    }
-                                                                    tone="success"
-                                                                />
-                                                                <Text
-                                                                    as="p"
-                                                                    variant="bodyMd"
-                                                                >
+                                                        <BlockStack gap="200">
+                                                            {plan.display_features.map((feature, i) => (
+                                                                <Text key={i} as="p" variant="bodyMd" tone="subdued">
                                                                     {feature}
                                                                 </Text>
-                                                            </InlineStack>
-                                                        ),
-                                                    )}
-                                                </BlockStack>
-
-                                                <Box paddingBlockStart="400">
-                                                    {current_shop.subscription
-                                                        ?.plan?.id ===
-                                                    plan.id ? (
-                                                        <Button
-                                                            fullWidth
-                                                            disabled
-                                                            size="large"
-                                                        >
-                                                            Current Plan
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            fullWidth
-                                                            variant={
-                                                                plan.is_featured
-                                                                    ? 'primary'
-                                                                    : 'secondary'
-                                                            }
-                                                            size="large"
-                                                            onClick={() =>
-                                                                handleSelectPlan(
-                                                                    plan.id,
-                                                                )
-                                                            }
-                                                        >
-                                                            Select Plan
-                                                        </Button>
-                                                    )}
-                                                </Box>
-                                            </BlockStack>
-                                        </Card>
-                                    </Box>
-                                </Grid.Cell>
-                            ))}
-
-                            {/* Custom Card */}
-                            <Grid.Cell
-                                columnSpan={{
-                                    xs: 6,
-                                    sm: 6,
-                                    md: 3,
-                                    lg: 4,
-                                    xl: 4,
-                                }}
-                            >
+                                                            ))}
+                                                        </BlockStack>
+                                                    </BlockStack>
+                                                    
+                                                    <div style={{ flexGrow: 1 }} />
+                                                    
+                                                    <Box paddingBlockStart="600">
+                                                        {isCurrentPlan ? (
+                                                            <Button fullWidth disabled size="large">
+                                                                Current Plan
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                fullWidth
+                                                                variant="primary"
+                                                                tone={plan.is_featured ? "success" : undefined}
+                                                                size="large"
+                                                                onClick={() => handleSelectPlan(plan.id)}
+                                                            >
+                                                                {parseFloat(plan.price) === 0 ? 'Get started' : 'Start free trial'}
+                                                            </Button>
+                                                        )}
+                                                    </Box>
+                                                </div>
+                                            </Card>
+                                        </Box>
+                                    </Grid.Cell>
+                                );
+                            })}
+                            
+                            {/* Enterprise Card */}
+                            <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 4, lg: 4, xl: 4 }}>
                                 <Box minHeight="100%" paddingBlockEnd="400">
-                                    <Card
-                                        padding="500"
-                                        background="bg-surface-secondary"
-                                    >
-                                        <BlockStack gap="500">
-                                            <BlockStack gap="200">
-                                                <Text
-                                                    variant="headingLg"
-                                                    as="h3"
-                                                    fontWeight="bold"
-                                                >
-                                                    Custom
+                                    <Card>
+                                        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '350px' }}>
+                                            <BlockStack gap="100">
+                                                <Text variant="headingLg" as="h3" fontWeight="bold">
+                                                    Enterprise
                                                 </Text>
-                                                <Text
-                                                    as="p"
-                                                    variant="bodySm"
-                                                    tone="subdued"
-                                                >
-                                                    For large enterprise needs
-                                                </Text>
+
+                                                <Box paddingBlockEnd="400">
+                                                    <Text variant="heading3xl" as="p" fontWeight="bold">
+                                                        Custom
+                                                    </Text>
+                                                </Box>
+
+                                                <BlockStack gap="200">
+                                                    <Text as="p" variant="bodyMd" tone="subdued">Unlimited custom fields</Text>
+                                                    <Text as="p" variant="bodyMd" tone="subdued">White-glove onboarding</Text>
+                                                    <Text as="p" variant="bodyMd" tone="subdued">Dedicated account manager</Text>
+                                                    <Text as="p" variant="bodyMd" tone="subdued">SLA & Priority Support</Text>
+                                                </BlockStack>
                                             </BlockStack>
-
-                                            <Text
-                                                variant="heading3xl"
-                                                as="p"
-                                                fontWeight="bold"
-                                            >
-                                                Enterprise
-                                            </Text>
-
-                                            <Divider />
-
-                                            <BlockStack gap="300">
-                                                <InlineStack
-                                                    gap="200"
-                                                    blockAlign="center"
-                                                >
-                                                    <Icon
-                                                        source={CheckIcon}
-                                                        tone="info"
-                                                    />
-                                                    <Text
-                                                        as="p"
-                                                        variant="bodyMd"
-                                                    >
-                                                        Custom metafield limits
-                                                    </Text>
-                                                </InlineStack>
-                                                <InlineStack
-                                                    gap="200"
-                                                    blockAlign="center"
-                                                >
-                                                    <Icon
-                                                        source={CheckIcon}
-                                                        tone="info"
-                                                    />
-                                                    <Text
-                                                        as="p"
-                                                        variant="bodyMd"
-                                                    >
-                                                        SLA & Priority Support
-                                                    </Text>
-                                                </InlineStack>
-                                                <InlineStack
-                                                    gap="200"
-                                                    blockAlign="center"
-                                                >
-                                                    <Icon
-                                                        source={CheckIcon}
-                                                        tone="info"
-                                                    />
-                                                    <Text
-                                                        as="p"
-                                                        variant="bodyMd"
-                                                    >
-                                                        Dedicated Manager
-                                                    </Text>
-                                                </InlineStack>
-                                            </BlockStack>
-
-                                            <Box paddingBlockStart="400">
-                                                <Button fullWidth size="large">
+                                            
+                                            <div style={{ flexGrow: 1 }} />
+                                            
+                                            <Box paddingBlockStart="600">
+                                                <Button fullWidth size="large" variant="primary">
                                                     Contact Sales
                                                 </Button>
                                             </Box>
-                                        </BlockStack>
+                                        </div>
                                     </Card>
                                 </Box>
                             </Grid.Cell>
                         </Grid>
                     </Layout.Section>
 
-                    {/* Stats Footer Section */}
-                    <Layout.Section variant="oneHalf">
-                        <Card>
-                            <BlockStack gap="400">
-                                <Text variant="headingMd" as="h2">
-                                    Account Credits
-                                </Text>
-                                <InlineStack gap="400" blockAlign="center">
-                                    <Icon
-                                        source={StarFilledIcon}
-                                        tone="warning"
-                                    />
-                                    <Text variant="heading2xl" as="p">
-                                        {current_shop.credits.toLocaleString()}
-                                    </Text>
-                                </InlineStack>
-                                <Button variant="plain">
-                                    Buy more credits
-                                </Button>
-                            </BlockStack>
-                        </Card>
+                    <Layout.Section>
+                        <Box paddingBlockStart="800">
+                            <Divider />
+                        </Box>
                     </Layout.Section>
 
                     <Layout.Section variant="oneHalf">
-                        <Card>
-                            <BlockStack gap="400">
-                                <Text variant="headingMd" as="h2">
-                                    Active Subscription
-                                </Text>
-                                <InlineStack gap="400" blockAlign="center">
-                                    <Icon source={MagicIcon} tone="info" />
-                                    <Text variant="heading2xl" as="p">
-                                        {current_shop.subscription?.plan
-                                            ?.name || 'Standard'}
+                        <Box paddingBlockStart="400">
+                            <Card padding="500">
+                                <BlockStack gap="400">
+                                    <Text variant="headingMd" as="h2">Account Balance</Text>
+                                    <InlineStack gap="400" blockAlign="center">
+                                        <Icon source={StarFilledIcon} tone="warning" />
+                                        <Text variant="heading2xl" as="p">{current_shop.credits.toLocaleString()}</Text>
+                                    </InlineStack>
+                                    <Button variant="plain">Buy more credits</Button>
+                                </BlockStack>
+                            </Card>
+                        </Box>
+                    </Layout.Section>
+
+                    <Layout.Section variant="oneHalf">
+                        <Box paddingBlockStart="400">
+                            <Card padding="500">
+                                <BlockStack gap="400">
+                                    <Text variant="headingMd" as="h2">Active Subscription</Text>
+                                    <InlineStack gap="400" blockAlign="center">
+                                        <Icon source={MagicIcon} tone="info" />
+                                        <Text variant="heading2xl" as="p">{current_shop.subscription?.plan?.name || 'Free Plan'}</Text>
+                                    </InlineStack>
+                                    <Text as="p" tone="subdued">
+                                        {current_shop.subscription?.status === 'ACTIVE' 
+                                            ? 'Your subscription is currently active.' 
+                                            : 'Upgrade your plan to unlock more features.'}
                                     </Text>
-                                </InlineStack>
-                                <Button variant="plain" disabled>
-                                    Manage subscription
-                                </Button>
-                            </BlockStack>
-                        </Card>
+                                </BlockStack>
+                            </Card>
+                        </Box>
                     </Layout.Section>
                 </Layout>
             </Page>

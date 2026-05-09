@@ -13,10 +13,31 @@ class PlanController extends Controller
     /**
      * Display a listing of the plans.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Plan::query();
+
+        // Search
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('handle', 'like', '%' . $request->search . '%');
+        }
+
+        // Sort
+        $sortField = $request->get('sort_field', 'created_at');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        
+        $allowedSortFields = ['id', 'name', 'handle', 'price', 'is_active', 'created_at'];
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
+        // Paginate
+        $plans = $query->paginate($request->get('per_page', 10))->withQueryString();
+
         return Inertia::render('admin/plan/index', [
-            'plans' => PlanService::getAllPlans(),
+            'plans' => $plans,
+            'filters' => $request->only(['search', 'sort_field', 'sort_direction', 'per_page']),
         ]);
     }
 
