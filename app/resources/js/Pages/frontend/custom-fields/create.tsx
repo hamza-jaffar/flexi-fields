@@ -26,9 +26,10 @@ import { DeleteIcon, PlusIcon } from '@shopify/polaris-icons';
 
 interface Props {
     shop: any;
+    allFields: any[];
 }
 
-const CreateCustomFieldPage = ({ shop }: Props) => {
+const CreateCustomFieldPage = ({ shop, allFields }: Props) => {
     const hasFeature = (key: string) => {
         const features = shop.subscription?.plan?.internal_features || [];
         const feature = features.find((f: any) => f.feature_key === key);
@@ -63,6 +64,7 @@ const CreateCustomFieldPage = ({ shop }: Props) => {
             custom_css: '',
         },
         conditions: [],
+        logic_type: 'all', // 'all' for AND, 'any' for OR
     });
 
     const [selectedTab, setSelectedTab] = useState(0);
@@ -102,6 +104,25 @@ const CreateCustomFieldPage = ({ shop }: Props) => {
         const newOptions = [...data.options];
         newOptions.splice(index, 1);
         setData('options', newOptions);
+    };
+
+    const addCondition = () => {
+        setData('conditions', [
+            ...data.conditions,
+            { field_id: '', operator: 'equals', value: '' },
+        ]);
+    };
+
+    const updateCondition = (index: number, key: string, value: string) => {
+        const newConditions = [...data.conditions];
+        newConditions[index] = { ...newConditions[index], [key]: value };
+        setData('conditions', newConditions);
+    };
+
+    const removeCondition = (index: number) => {
+        const newConditions = [...data.conditions];
+        newConditions.splice(index, 1);
+        setData('conditions', newConditions);
     };
 
     const renderPreview = () => {
@@ -401,14 +422,139 @@ const CreateCustomFieldPage = ({ shop }: Props) => {
 
                                     {selectedTab === 4 && (
                                         <BlockStack gap="400">
-                                            <Text variant="headingMd" as="h2">Conditional Logic</Text>
+                                            <BlockStack gap="200">
+                                                <Text variant="headingMd" as="h2">
+                                                    Conditional Logic
+                                                </Text>
+                                                <Text
+                                                    as="p"
+                                                    variant="bodyMd"
+                                                    tone="subdued"
+                                                >
+                                                    Show this field only when
+                                                    certain conditions are met
+                                                    on other fields.
+                                                </Text>
+                                            </BlockStack>
+
                                             {!hasConditionalLogic ? (
-                                                <Banner tone="info">Upgrade your plan to unlock conditional logic rules.</Banner>
+                                                <Banner tone="info">
+                                                    Upgrade your plan to unlock
+                                                    conditional logic rules.
+                                                </Banner>
                                             ) : (
-                                                <Card background="bg-surface-secondary">
-                                                    <Text as="p" variant="bodyMd">Condition builder goes here. (e.g. Show this field ONLY IF another field equals X).</Text>
-                                                    <Button variant="primary">Add Rule</Button>
-                                                </Card>
+                                                <BlockStack gap="400">
+                                                    <Box paddingBlockEnd="200">
+                                                        <Select
+                                                            label="Satisfy"
+                                                            options={[
+                                                                { label: 'All conditions (AND)', value: 'all' },
+                                                                { label: 'Any condition (OR)', value: 'any' },
+                                                            ]}
+                                                            value={data.logic_type}
+                                                            onChange={(val) => setData('logic_type', val)}
+                                                        />
+                                                    </Box>
+
+                                                    {data.conditions.length > 0 && (
+                                                        <div className="conditions-container">
+                                                            <BlockStack gap="400">
+                                                                {data.conditions.map((condition: any, index: number) => {
+                                                                    const selectedField = allFields.find(f => f.id.toString() === condition.field_id.toString());
+                                                                    
+                                                                    return (
+                                                                        <div key={index} className="condition-row">
+                                                                            <InlineStack gap="300" align="start" blockAlign="center">
+                                                                                <div style={{ flex: 1.5 }}>
+                                                                                    <Select
+                                                                                        label="If field"
+                                                                                        labelHidden
+                                                                                        options={[
+                                                                                            { label: 'Select a field', value: '', disabled: true },
+                                                                                            ...allFields.map(f => ({
+                                                                                                label: f.name,
+                                                                                                value: f.id.toString(),
+                                                                                            })),
+                                                                                        ]}
+                                                                                        value={condition.field_id.toString()}
+                                                                                        onChange={(val) => updateCondition(index, 'field_id', val)}
+                                                                                    />
+                                                                                </div>
+                                                                                <div style={{ flex: 1 }}>
+                                                                                    <Select
+                                                                                        label="Operator"
+                                                                                        labelHidden
+                                                                                        options={[
+                                                                                            { label: 'Equals', value: 'equals' },
+                                                                                            { label: 'Not equals', value: 'not_equals' },
+                                                                                            { label: 'Contains', value: 'contains' },
+                                                                                            { label: 'Greater than', value: 'greater_than' },
+                                                                                            { label: 'Less than', value: 'less_than' },
+                                                                                            { label: 'Is empty', value: 'is_empty' },
+                                                                                            { label: 'Is not empty', value: 'is_not_empty' },
+                                                                                        ]}
+                                                                                        value={condition.operator}
+                                                                                        onChange={(val) => updateCondition(index, 'operator', val)}
+                                                                                    />
+                                                                                </div>
+                                                                                
+                                                                                {condition.operator !== 'is_empty' && condition.operator !== 'is_not_empty' && (
+                                                                                    <div style={{ flex: 1 }}>
+                                                                                        {selectedField && (selectedField.type === 'select' || selectedField.type === 'color_swatch') ? (
+                                                                                            <Select
+                                                                                                label="Value"
+                                                                                                labelHidden
+                                                                                                options={[
+                                                                                                    { label: 'Select value', value: '', disabled: true },
+                                                                                                    ...(selectedField.options || []).map((opt: any) => ({
+                                                                                                        label: opt.label,
+                                                                                                        value: opt.value,
+                                                                                                    })),
+                                                                                                ]}
+                                                                                                value={condition.value}
+                                                                                                onChange={(val) => updateCondition(index, 'value', val)}
+                                                                                            />
+                                                                                        ) : selectedField && (selectedField.type === 'checkbox' || selectedField.type === 'switch') ? (
+                                                                                            <Select
+                                                                                                label="Value"
+                                                                                                labelHidden
+                                                                                                options={[
+                                                                                                    { label: 'Checked', value: 'true' },
+                                                                                                    { label: 'Unchecked', value: 'false' },
+                                                                                                ]}
+                                                                                                value={condition.value}
+                                                                                                onChange={(val) => updateCondition(index, 'value', val)}
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <TextField
+                                                                                                label="Value"
+                                                                                                labelHidden
+                                                                                                placeholder="Value"
+                                                                                                value={condition.value}
+                                                                                                onChange={(val) => updateCondition(index, 'value', val)}
+                                                                                                autoComplete="off"
+                                                                                            />
+                                                                                        )}
+                                                                                    </div>
+                                                                                )}
+                                                                                
+                                                                                <Button
+                                                                                    icon={DeleteIcon}
+                                                                                    tone="critical"
+                                                                                    onClick={() => removeCondition(index)}
+                                                                                />
+                                                                            </InlineStack>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </BlockStack>
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div style={{ marginTop: '8px' }}>
+                                                        <Button icon={PlusIcon} onClick={addCondition}>Add Condition</Button>
+                                                    </div>
+                                                </BlockStack>
                                             )}
                                         </BlockStack>
                                     )}

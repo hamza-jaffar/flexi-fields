@@ -57,6 +57,7 @@ class CustomFieldController extends Controller
 
         return Inertia::render('frontend/custom-fields/index', [
             'customFields' => $customFields,
+            'allFields' => $customFields, // All fields for index as well if needed
             'shop' => $shop,
             'fieldStats' => $stats,
         ]);
@@ -71,8 +72,11 @@ class CustomFieldController extends Controller
             return redirect()->route('app.custom-field.index')->with('error', 'You have reached your custom fields limit. Please upgrade your plan or delete fields to continue.');
         }
         
+        $allFields = CustomField::where('shop_id', $shop->id)->get();
+
         return Inertia::render('frontend/custom-fields/create', [
             'shop' => $shop,
+            'allFields' => $allFields,
         ]);
     }
 
@@ -129,9 +133,14 @@ class CustomFieldController extends Controller
             abort(403);
         }
 
+        $allFields = CustomField::where('shop_id', $shop->id)
+            ->where('id', '!=', $customField->id)
+            ->get();
+
         return Inertia::render('frontend/custom-fields/edit', [
             'shop' => $shop,
             'customField' => $customField->load('targets'),
+            'allFields' => $allFields,
         ]);
     }
 

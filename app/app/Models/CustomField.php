@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
     'options',
     'settings',
     'conditions',
+    'logic_type',
     'target'
 )]
 class CustomField extends Model

@@ -3,7 +3,6 @@ import { AppProvider, Frame } from '@shopify/polaris';
 import { NavMenu } from '@shopify/app-bridge-react';
 import enTranslations from '@shopify/polaris/locales/en.json';
 import { Link } from '@inertiajs/react';
-import '@shopify/polaris/build/esm/styles.css';
 
 export default function ShopifyLayout({
     children,
