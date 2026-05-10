@@ -6,9 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\Frontend\BillingController;
 
 Route::prefix("app")->middleware(['shopify.verify'])->name('app.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('frontend/welcome');
-    })->name("index");
+    Route::get('/', [\App\Http\Controllers\Frontend\DashboardController::class, 'index'])->name("index");
 
     Route::get('/billing', [BillingController::class, 'index'])->name('billing');
 

@@ -72,15 +72,14 @@ const Billing = ({ plans, current_shop }: Props) => {
     // Features to compare
     const comparisonFeatures = [
         { label: 'Custom Fields', keys: ['custom_fields_limit'] },
-        { label: 'Standard Field Types', keys: ['standard_field_types'] },
+        { label: 'Storage Limit', keys: ['storage_limit_mb'] },
+        { label: 'Standard Field Types', keys: ['basic_field_types'] },
         { label: 'Advanced Field Types', keys: ['advanced_field_types'] },
-        { label: 'Theme App Extension', keys: ['theme_extension'] },
         { label: 'Conditional Logic', keys: ['conditional_logic'] },
         { label: 'Price Add-ons', keys: ['price_addons'] },
         { label: 'Bulk Editor Tools', keys: ['bulk_editor'] },
         { label: 'File Uploads', keys: ['file_uploads'] },
         { label: 'Priority Support', keys: ['priority_support'] },
-        { label: 'Account Manager', keys: ['account_manager'] },
     ];
 
     const getFeatureValue = (plan: Plan, featureKey: string) => {
@@ -168,7 +167,12 @@ const Billing = ({ plans, current_shop }: Props) => {
                                                                         <Icon source={MinusIcon} tone="subdued" />
                                                                     )
                                                                 ) : (
-                                                                    <Text variant="bodyMd" fontWeight="bold">{val === -1 ? 'Unlimited' : val}</Text>
+                                                                    <Text variant="bodyMd" fontWeight="bold">
+                                                                        {val === -1 ? 'Unlimited' : 
+                                                                         feature.keys.includes('storage_limit_mb') ? 
+                                                                         (val >= 1000 ? `${val/1000}GB` : `${val}MB`) : 
+                                                                         val}
+                                                                    </Text>
                                                                 )}
                                                             </td>
                                                         );

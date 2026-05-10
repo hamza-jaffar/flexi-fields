@@ -14,7 +14,7 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         // Clear existing plans to avoid duplicates
-        Plan::truncate();
+        \Illuminate\Support\Facades\DB::table('plans')->delete();
 
         $plans = [
             [
@@ -29,9 +29,9 @@ class PlanSeeder extends Seeder
                     ['feature_key' => PlanFeature::CUSTOM_FIELDS_LIMIT->value, 'feature_value' => 5],
                     ['feature_key' => PlanFeature::BASIC_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FIELD_VALIDATION->value, 'feature_value' => true],
-                    ['feature_key' => PlanFeature::THEME_APP_EXTENSION->value, 'feature_value' => true],
+                    ['feature_key' => PlanFeature::STORAGE_LIMIT_MB->value, 'feature_value' => 50],
                 ],
-                'display_features' => ['Up to 5 custom fields', 'Standard field types', 'Theme app extension'],
+                'display_features' => ['Up to 5 custom fields', 'Standard field types', 'Quick setup'],
             ],
             [
                 'name' => 'Basic',
@@ -45,9 +45,9 @@ class PlanSeeder extends Seeder
                     ['feature_key' => PlanFeature::CUSTOM_FIELDS_LIMIT->value, 'feature_value' => 20],
                     ['feature_key' => PlanFeature::BASIC_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FIELD_VALIDATION->value, 'feature_value' => true],
-                    ['feature_key' => PlanFeature::THEME_APP_EXTENSION->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::CONDITIONAL_LOGIC->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::BULK_EDITOR->value, 'feature_value' => true],
+                    ['feature_key' => PlanFeature::STORAGE_LIMIT_MB->value, 'feature_value' => 250],
                 ],
                 'display_features' => ['Up to 20 custom fields', 'Conditional logic', 'Bulk editor tools', '7-day free trial'],
             ],
@@ -64,12 +64,12 @@ class PlanSeeder extends Seeder
                     ['feature_key' => PlanFeature::BASIC_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::ADVANCED_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FIELD_VALIDATION->value, 'feature_value' => true],
-                    ['feature_key' => PlanFeature::THEME_APP_EXTENSION->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::CONDITIONAL_LOGIC->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::BULK_EDITOR->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FILE_UPLOADS->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::PRICE_ADDONS->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::PRIORITY_SUPPORT->value, 'feature_value' => true],
+                    ['feature_key' => PlanFeature::STORAGE_LIMIT_MB->value, 'feature_value' => 1000],
                 ],
                 'display_features' => ['Up to 100 custom fields', 'File uploads & Price add-ons', 'Advanced field types', 'Priority support'],
             ],
@@ -86,16 +86,15 @@ class PlanSeeder extends Seeder
                     ['feature_key' => PlanFeature::BASIC_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::ADVANCED_FIELD_TYPES->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FIELD_VALIDATION->value, 'feature_value' => true],
-                    ['feature_key' => PlanFeature::THEME_APP_EXTENSION->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::CONDITIONAL_LOGIC->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::BULK_EDITOR->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::FILE_UPLOADS->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::PRICE_ADDONS->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::PRIORITY_SUPPORT->value, 'feature_value' => true],
-                    ['feature_key' => PlanFeature::DEDICATED_ACCOUNT_MANAGER->value, 'feature_value' => true],
                     ['feature_key' => PlanFeature::CUSTOM_STYLING->value, 'feature_value' => true],
+                    ['feature_key' => PlanFeature::STORAGE_LIMIT_MB->value, 'feature_value' => -1],
                 ],
-                'display_features' => ['Unlimited custom fields', 'Dedicated account manager', 'Custom styling support', 'White-glove setup'],
+                'display_features' => ['Unlimited custom fields', 'Custom styling support', 'White-glove setup', 'Priority support'],
             ],
         ];
 

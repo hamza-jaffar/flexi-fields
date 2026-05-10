@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\ShopController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 
     Route::prefix('plan')->name('plan.')->group(function () {

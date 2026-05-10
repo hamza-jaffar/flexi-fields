@@ -33,7 +33,7 @@ enum PlanFeature: string
     case LIVE_PREVIEW = 'live_preview';
     case FILE_UPLOADS = 'file_uploads';
     case PRICE_ADDONS = 'price_addons';
-    case INVENTORY_LINKING = 'inventory_linking';
+    // case INVENTORY_LINKING = 'inventory_linking';
     case FIELD_VALIDATION = 'field_validation';
 
     /*
@@ -42,9 +42,9 @@ enum PlanFeature: string
     |--------------------------------------------------------------------------
     */
 
-    case THEME_APP_EXTENSION = 'theme_app_extension';
+    // case THEME_APP_EXTENSION = 'theme_app_extension';
     case CUSTOM_STYLING = 'custom_styling';
-    case MULTI_LANGUAGE = 'multi_language';
+    // case MULTI_LANGUAGE = 'multi_language';
 
     /*
     |--------------------------------------------------------------------------
@@ -52,7 +52,7 @@ enum PlanFeature: string
     |--------------------------------------------------------------------------
     */
 
-    case TEMPLATE_LIBRARY = 'template_library';
+    // case TEMPLATE_LIBRARY = 'template_library';
     case IMPORT_EXPORT = 'import_export';
     case BULK_EDITOR = 'bulk_editor';
 
@@ -63,7 +63,7 @@ enum PlanFeature: string
     */
 
     case PRIORITY_SUPPORT = 'priority_support';
-    case DEDICATED_ACCOUNT_MANAGER = 'dedicated_account_manager';
+    // case DEDICATED_ACCOUNT_MANAGER = 'dedicated_account_manager';
 
     public function label(): string
     {
@@ -79,19 +79,19 @@ enum PlanFeature: string
             self::LIVE_PREVIEW => 'Live Preview',
             self::FILE_UPLOADS => 'File Uploads',
             self::PRICE_ADDONS => 'Price Add-ons',
-            self::INVENTORY_LINKING => 'Inventory Linking',
+                // self::INVENTORY_LINKING => 'Inventory Linking',
             self::FIELD_VALIDATION => 'Field Validation',
 
-            self::THEME_APP_EXTENSION => 'Theme App Extension',
+                // self::THEME_APP_EXTENSION => 'Theme App Extension',
             self::CUSTOM_STYLING => 'Custom Styling',
-            self::MULTI_LANGUAGE => 'Multi-language Support',
+                // self::MULTI_LANGUAGE => 'Multi-language Support',
 
-            self::TEMPLATE_LIBRARY => 'Template Library',
+                // self::TEMPLATE_LIBRARY => 'Template Library',
             self::IMPORT_EXPORT => 'Import / Export',
             self::BULK_EDITOR => 'Bulk Editor',
 
             self::PRIORITY_SUPPORT => 'Priority Support',
-            self::DEDICATED_ACCOUNT_MANAGER => 'Dedicated Account Manager',
+        // self::DEDICATED_ACCOUNT_MANAGER => 'Dedicated Account Manager',
         };
     }
 
@@ -109,19 +109,19 @@ enum PlanFeature: string
             self::LIVE_PREVIEW => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Product Customizer Features', 'description' => 'Live product preview for customers'],
             self::FILE_UPLOADS => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Product Customizer Features', 'description' => 'Allow customers to upload files'],
             self::PRICE_ADDONS => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Product Customizer Features', 'description' => 'Add extra cost to products via fields'],
-            self::INVENTORY_LINKING => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Product Customizer Features', 'description' => 'Link options to Shopify inventory'],
+                // self::INVENTORY_LINKING => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Product Customizer Features', 'description' => 'Link options to Shopify inventory'],
             self::FIELD_VALIDATION => ['type' => 'boolean', 'input' => 'toggle', 'default' => true, 'group' => 'Product Customizer Features', 'description' => 'Require fields and set text limits'],
 
-            self::THEME_APP_EXTENSION => ['type' => 'boolean', 'input' => 'toggle', 'default' => true, 'group' => 'UI / Storefront', 'description' => 'Install via Shopify Online Store 2.0 theme blocks'],
+                // self::THEME_APP_EXTENSION => ['type' => 'boolean', 'input' => 'toggle', 'default' => true, 'group' => 'UI / Storefront', 'description' => 'Install via Shopify Online Store 2.0 theme blocks'],
             self::CUSTOM_STYLING => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'UI / Storefront', 'description' => 'Inject custom CSS to match store design'],
-            self::MULTI_LANGUAGE => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'UI / Storefront', 'description' => 'Support for translating field labels'],
+                // self::MULTI_LANGUAGE => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'UI / Storefront', 'description' => 'Support for translating field labels'],
 
-            self::TEMPLATE_LIBRARY => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Management', 'description' => 'Pre-made field templates to start quickly'],
+                // self::TEMPLATE_LIBRARY => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Management', 'description' => 'Pre-made field templates to start quickly'],
             self::IMPORT_EXPORT => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Management', 'description' => 'Export and import field configurations via CSV/JSON'],
             self::BULK_EDITOR => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Management', 'description' => 'Assign fields to multiple products at once'],
 
             self::PRIORITY_SUPPORT => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Support', 'description' => 'Skip the queue for support tickets'],
-            self::DEDICATED_ACCOUNT_MANAGER => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Support', 'description' => '1-on-1 setup and strategy calls'],
+        // self::DEDICATED_ACCOUNT_MANAGER => ['type' => 'boolean', 'input' => 'toggle', 'default' => false, 'group' => 'Support', 'description' => '1-on-1 setup and strategy calls'],
         };
     }
 
