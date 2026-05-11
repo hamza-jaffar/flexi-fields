@@ -5,9 +5,9 @@ use App\Http\Controllers\Shopify\WebhookController;
 use App\Http\Middleware\VerifyShopifyWebhook;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [AuthController::class, 'index'])->name('home');
-
 Route::middleware(['shopify.header'])->group(function () {
+    Route::get('/', [AuthController::class, 'index'])->name('home');
+
     Route::post('webhooks/app/uninstalled', [WebhookController::class, 'handleUninstall'])
         ->middleware(VerifyShopifyWebhook::class);
 

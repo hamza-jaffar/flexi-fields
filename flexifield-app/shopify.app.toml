@@ -2,19 +2,18 @@
 
 client_id = "d2819f89ed40b3925a9e1bd2db8c984e"
 name = "flexi-fields"
-application_url = "https://chrissy-unpraised-allyn.ngrok-free.dev"
+application_url = "https://flexi-fields.degvora.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
-include_config_on_deploy = true
 
 [webhooks]
 api_version = "2026-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+scopes = "read_orders,write_orders,read_products,write_products"
 
 [auth]
-redirect_urls = [ "https://chrissy-unpraised-allyn.ngrok-free.dev/auth" ]
+redirect_urls = [ "https://flexi-fields.degvora.com/auth/callback" ]
