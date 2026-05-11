@@ -133,4 +133,126 @@ class ShopifyService
 
         return $result['data']['currentAppInstallation']['activeSubscriptions'][0] ?? null;
     }
+
+    /**
+     * Ensure the hidden addon product exists and return its variant ID.
+     */
+    public static function ensureAddonProductExists(Shop $shop)
+    {
+        if ($shop->addon_variant_id) {
+            return $shop->addon_variant_id;
+        }
+
+        // 1. Search for existing product
+        $searchQuery = <<<GQL
+        query {
+          products(first: 1, query: "title:'Flexi Fields Addon'") {
+            edges {
+              node {
+                id
+                variants(first: 1) {
+                  edges {
+                    node {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        GQL;
+
+        $searchResult = self::graphQL($shop, $searchQuery);
+        $products = $searchResult['data']['products']['edges'] ?? [];
+
+        if (!empty($products)) {
+            $variantGid = $products[0]['node']['variants']['edges'][0]['node']['id'];
+            $variantId = last(explode('/', $variantGid));
+            $shop->update(['addon_variant_id' => $variantId]);
+            return $variantId;
+        }
+
+        // 2. Create the product if not found
+        $createMutation = <<<GQL
+        mutation productCreate(\$input: ProductInput!) {
+          productCreate(input: \$input) {
+            product {
+              id
+              variants(first: 1) {
+                edges {
+                  node {
+                    id
+                  }
+                }
+              }
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        GQL;
+
+        $variables = [
+            'input' => [
+                'title' => 'Flexi Fields Addon',
+                'descriptionHtml' => 'This is a hidden product used by the Flexi Fields app to handle custom field price addons. Do not delete.',
+                'status' => 'ACTIVE',
+                'tags' => ['flexi-fields-addon'],
+                'metafields' => [
+                    [
+                        'namespace' => 'seo',
+                        'key' => 'hidden',
+                        'value' => '1',
+                        'type' => 'number_integer',
+                    ]
+                ]
+            ]
+        ];
+
+        $createResult = self::graphQL($shop, $createMutation, $variables);
+        
+        if (isset($createResult['data']['productCreate']['product'])) {
+            $variantGid = $createResult['data']['productCreate']['product']['variants']['edges'][0]['node']['id'];
+            $variantId = last(explode('/', $variantGid));
+            
+            // 3. Update the variant to have the correct price and settings
+            $updateMutation = <<<GQL
+            mutation productVariantUpdate(\$input: ProductVariantInput!) {
+              productVariantUpdate(input: \$input) {
+                productVariant {
+                  id
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+            GQL;
+
+            $updateVariables = [
+                'input' => [
+                    'id' => $variantGid,
+                    'price' => 1.00,
+                    'requiresShipping' => false,
+                    'inventoryPolicy' => 'CONTINUE',
+                    'taxable' => false,
+                ]
+            ];
+
+            self::graphQL($shop, $updateMutation, $updateVariables);
+
+            $shop->update(['addon_variant_id' => $variantId]);
+            return $variantId;
+        }
+
+        Log::error("Failed to create addon product for {$shop->shop_domain}", [
+            'result' => $createResult
+        ]);
+
+        return null;
+    }
 }

@@ -56,9 +56,14 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $storageLimitMb = \App\Services\PlanService::resolveFeatureValue($shop, PlanFeature::STORAGE_LIMIT_MB->value, 100);
+
         return Inertia::render('frontend/welcome', [
             'shop' => $shop,
-            'stats' => $stats,
+            'stats' => array_merge($stats, [
+                'storage_used_bytes' => $shop->storage_used,
+                'storage_limit_mb' => $storageLimitMb,
+            ]),
             'recentFields' => $recentFields,
         ]);
     }

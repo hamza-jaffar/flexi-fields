@@ -257,6 +257,23 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                 }}
             >
                 <BlockStack gap="600">
+                    {!shop.addon_variant_id && (
+                        <Banner
+                            title="Pricing Setup Required"
+                            tone="warning"
+                            action={{
+                                content: 'Configure Pricing',
+                                onAction: () =>
+                                    setSelectedTab && setSelectedTab(0), // Placeholder logic if needed
+                            }}
+                        >
+                            <p>
+                                You have fields with price addons, but the
+                                system is still initializing the hidden addon
+                                product. Please refresh in a moment.
+                            </p>
+                        </Banner>
+                    )}
                     {fieldStats.current > fieldStats.limit &&
                         fieldStats.limit !== -1 && (
                             <Banner
@@ -394,6 +411,82 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                             </div>
                         </Layout.Section>
                     </Layout>
+
+                    {/* Pricing Config Card */}
+                    <Card>
+                        <Box padding="400">
+                            <BlockStack gap="400">
+                                <InlineStack align="space-between">
+                                    <BlockStack gap="050">
+                                        <Text variant="headingMd" as="h3">
+                                            Pricing Configuration
+                                        </Text>
+                                        <Text
+                                            variant="bodySm"
+                                            tone="subdued"
+                                            as="p"
+                                        >
+                                            To use price addons, you must
+                                            configure the Addon Variant ID in
+                                            your Theme Editor.
+                                        </Text>
+                                    </BlockStack>
+                                    <Badge
+                                        tone={
+                                            shop.addon_variant_id
+                                                ? 'success'
+                                                : 'warning'
+                                        }
+                                    >
+                                        {shop.addon_variant_id
+                                            ? 'Product Ready'
+                                            : 'Action Required'}
+                                    </Badge>
+                                </InlineStack>
+
+                                <div
+                                    style={{
+                                        background: '#f6f6f7',
+                                        padding: '16px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e1e1e2',
+                                    }}
+                                >
+                                    <InlineStack align="space-between" blockAlign="center">
+                                        <BlockStack gap="100">
+                                            <Text variant="bodySm" fontWeight="bold">
+                                                Addon Variant ID
+                                            </Text>
+                                            <Text variant="bodyMd" tone="subdued">
+                                                {shop.addon_variant_id || 'Generating...'}
+                                            </Text>
+                                        </BlockStack>
+                                        {shop.addon_variant_id && (
+                                            <Button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(shop.addon_variant_id);
+                                                    shopify.toast.show('ID Copied!');
+                                                }}
+                                            >
+                                                Copy ID
+                                            </Button>
+                                        )}
+                                    </InlineStack>
+                                </div>
+
+                                <Banner tone="info">
+                                    <p>
+                                        <strong>How to setup:</strong> Go to
+                                        your <strong>Theme Customizer</strong> →{' '}
+                                        <strong>App Embeds</strong> or the{' '}
+                                        <strong>Flexi Fields block</strong>, and
+                                        paste the ID above into the{' '}
+                                        <strong>Addon Variant ID</strong> field.
+                                    </p>
+                                </Banner>
+                            </BlockStack>
+                        </Box>
+                    </Card>
 
                     <Card padding="0">
                         <Box padding="400">

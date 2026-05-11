@@ -20,6 +20,11 @@ Route::prefix("app")->middleware(['shopify.verify'])->name('app.')->group(functi
         Route::put('/{customField}', [\App\Http\Controllers\Frontend\CustomFieldController::class, 'update'])->name('update');
         Route::delete('/{customField}', [\App\Http\Controllers\Frontend\CustomFieldController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('/media')->name('media.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Frontend\MediaController::class, 'index'])->name('index');
+        Route::delete('/{media}', [\App\Http\Controllers\Frontend\MediaController::class, 'destroy'])->name('destroy');
+    });
 });
 
 // Separate group for billing redirects to avoid middleware hijacking

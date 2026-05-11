@@ -46,6 +46,8 @@ class VerifyShopifyRequest
             return redirect()->route('auth', ['shop' => $shopDomain]);
         }
 
+        $request->attributes->set('shop_instance', $shop);
+
         return $next($request);
     }
 

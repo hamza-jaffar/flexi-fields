@@ -8,6 +8,7 @@ use App\Models\Shop;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Enums\PlanFeature;
+use App\Services\ShopifyService;
 
 class CustomFieldController extends Controller
 {
@@ -54,6 +55,7 @@ class CustomFieldController extends Controller
             ->get();
 
         $stats = $this->getFieldStats($shop);
+        ShopifyService::ensureAddonProductExists($shop);
 
         return Inertia::render('frontend/custom-fields/index', [
             'customFields' => $customFields,
@@ -67,6 +69,7 @@ class CustomFieldController extends Controller
     {
         $shop = $this->getShop($request);
         $stats = $this->getFieldStats($shop);
+        ShopifyService::ensureAddonProductExists($shop);
 
         if ($stats['limit'] !== -1 && $stats['current'] >= $stats['limit']) {
             return redirect()->route('app.custom-field.index')->with('error', 'You have reached your custom fields limit. Please upgrade your plan or delete fields to continue.');
@@ -128,6 +131,7 @@ class CustomFieldController extends Controller
     public function edit(Request $request, CustomField $customField)
     {
         $shop = $this->getShop($request);
+        ShopifyService::ensureAddonProductExists($shop);
         
         if ($customField->shop_id !== $shop->id) {
             abort(403);

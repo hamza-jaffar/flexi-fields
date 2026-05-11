@@ -22,6 +22,7 @@ import {
     CheckCircleIcon,
     QuestionCircleIcon,
     CreditCardIcon,
+    ArchiveIcon,
 } from '@shopify/polaris-icons';
 import { Head, Link } from '@inertiajs/react';
 import app from '@/routes/app';
@@ -74,7 +75,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                     </Box>
 
                     {/* Stats Grid */}
-                    <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+                    <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
                         <Card>
                             <BlockStack gap="400">
                                 <InlineStack gap="200" blockAlign="center">
@@ -82,7 +83,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                         <Icon source={AppsIcon} tone="subdued" />
                                     </Box>
                                     <Text variant="headingMd" as="h3">
-                                        Usage
+                                        Fields Usage
                                     </Text>
                                 </InlineStack>
                                 <BlockStack gap="200">
@@ -122,6 +123,37 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                         <Card>
                             <BlockStack gap="400">
                                 <InlineStack gap="200" blockAlign="center">
+                                    <Box background="bg-surface-info" padding="100" borderRadius="150">
+                                        <Icon source={ArchiveIcon} tone="info" />
+                                    </Box>
+                                    <Text variant="headingMd" as="h3">
+                                        Storage
+                                    </Text>
+                                </InlineStack>
+                                <BlockStack gap="200">
+                                    <InlineStack align="space-between">
+                                        <Text as="p" variant="bodyMd" tone="subdued">
+                                            Usage
+                                        </Text>
+                                        <Text as="p" variant="bodyMd" fontWeight="bold">
+                                            {Math.round(stats.storage_used_bytes / (1024 * 1024))} MB / {stats.storage_limit_mb === -1 ? '∞' : stats.storage_limit_mb} MB
+                                        </Text>
+                                    </InlineStack>
+                                    <ProgressBar
+                                        progress={stats.storage_limit_mb === -1 ? 0 : (stats.storage_used_bytes / (stats.storage_limit_mb * 1024 * 1024)) * 100}
+                                        tone={
+                                            (stats.storage_used_bytes / (stats.storage_limit_mb * 1024 * 1024)) * 100 > 90
+                                                ? 'critical'
+                                                : 'success'
+                                        }
+                                    />
+                                </BlockStack>
+                            </BlockStack>
+                        </Card>
+
+                        <Card>
+                            <BlockStack gap="400">
+                                <InlineStack gap="200" blockAlign="center">
                                     <Box background="bg-surface-success" padding="100" borderRadius="150">
                                         <Icon source={CheckCircleIcon} tone="success" />
                                     </Box>
@@ -142,7 +174,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                         variant="bodyMd"
                                         tone="subdued"
                                     >
-                                        Currently active on storefront
+                                        Currently active fields
                                     </Text>
                                 </BlockStack>
                             </BlockStack>
@@ -155,7 +187,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                         <Icon source={CreditCardIcon} tone="subdued" />
                                     </Box>
                                     <Text variant="headingMd" as="h3">
-                                        Current Plan
+                                        Plan
                                     </Text>
                                 </InlineStack>
                                 <BlockStack gap="200">

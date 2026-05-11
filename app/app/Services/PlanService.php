@@ -47,4 +47,26 @@ class PlanService
     {
         return $plan->delete();
     }
+
+    /**
+     * Resolve the value of a feature for a specific shop.
+     */
+    public static function resolveFeatureValue(\App\Models\Shop $shop, string $featureKey, $default = null)
+    {
+        $plan = $shop->subscription ? $shop->subscription->plan : Plan::where('handle', 'free')->first();
+        
+        if (!$plan) {
+            return $default;
+        }
+
+        $features = is_array($plan->internal_features) ? $plan->internal_features : [];
+
+        foreach ($features as $feature) {
+            if (($feature['feature_key'] ?? '') === $featureKey) {
+                return $feature['feature_value'] ?? $default;
+            }
+        }
+
+        return $default;
+    }
 }

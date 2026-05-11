@@ -18,7 +18,9 @@ use Illuminate\Database\Eloquent\Model;
     'installed_at',
     'uninstalled_at',
     'last_synced_at',
-    'credits'
+    'credits',
+    'addon_variant_id',
+    'storage_used'
 )]
 class Shop extends Model
 {
