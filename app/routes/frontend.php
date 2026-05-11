@@ -25,6 +25,11 @@ Route::prefix("app")->middleware(['shopify.verify'])->name('app.')->group(functi
         Route::get('/', [\App\Http\Controllers\Frontend\MediaController::class, 'index'])->name('index');
         Route::delete('/{media}', [\App\Http\Controllers\Frontend\MediaController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('/settings')->name('settings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Shopify\SettingsController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Shopify\SettingsController::class, 'update'])->name('update');
+    });
 });
 
 // Separate group for billing redirects to avoid middleware hijacking

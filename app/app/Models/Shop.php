@@ -20,7 +20,10 @@ use Illuminate\Database\Eloquent\Model;
     'last_synced_at',
     'credits',
     'addon_variant_id',
-    'storage_used'
+    'storage_used',
+    'summary_label',
+    'required_error_label',
+    'addon_product_name'
 )]
 class Shop extends Model
 {

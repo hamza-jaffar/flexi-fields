@@ -16,16 +16,21 @@ export default function RedirectPage({ authUrl }: { authUrl: string }) {
     }, [authUrl]);
 
     return (
-        <ShopifyLayout>
-            <Page>
-                <BlockStack inlineAlign="center">
-                    <Spinner size="small" />
-                    <Text as="p" variant="bodyMd">
-                        Connecting to Shopify...
-                    </Text>
-                </BlockStack>
-            </Page>
-        </ShopifyLayout>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100vh',
+            width: '100vw',
+            backgroundColor: '#f6f6f7',
+            gap: '16px'
+        }}>
+            <Spinner size="large" />
+            <Text as="p" variant="bodyLg" tone="subdued">
+                Connecting to Shopify...
+            </Text>
+        </div>
     );
 }
 

@@ -15,7 +15,7 @@ class MediaController extends Controller
 {
     public function index(Request $request)
     {
-        $shop = $request->attributes->get('shop_instance');
+        $shop = $request->get('shop_instance');
 
         $media = Media::where('shop_id', $shop->id)
             ->latest()
@@ -37,7 +37,7 @@ class MediaController extends Controller
 
     public function destroy(Request $request, Media $media)
     {
-        $shop = $request->attributes->get('shop_instance');
+        $shop = $request->get('shop_instance');
 
         if ($media->shop_id !== $shop->id) {
             abort(403);

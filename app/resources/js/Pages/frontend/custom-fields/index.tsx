@@ -256,7 +256,7 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                     },
                 }}
             >
-                <BlockStack gap="600">
+                <BlockStack gap="800">
                     {!shop.addon_variant_id && (
                         <Banner
                             title="Pricing Setup Required"
@@ -452,20 +452,34 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                                         border: '1px solid #e1e1e2',
                                     }}
                                 >
-                                    <InlineStack align="space-between" blockAlign="center">
+                                    <InlineStack
+                                        align="space-between"
+                                        blockAlign="center"
+                                    >
                                         <BlockStack gap="100">
-                                            <Text variant="bodySm" fontWeight="bold">
+                                            <Text
+                                                variant="bodySm"
+                                                fontWeight="bold"
+                                            >
                                                 Addon Variant ID
                                             </Text>
-                                            <Text variant="bodyMd" tone="subdued">
-                                                {shop.addon_variant_id || 'Generating...'}
+                                            <Text
+                                                variant="bodyMd"
+                                                tone="subdued"
+                                            >
+                                                {shop.addon_variant_id ||
+                                                    'Generating...'}
                                             </Text>
                                         </BlockStack>
                                         {shop.addon_variant_id && (
                                             <Button
                                                 onClick={() => {
-                                                    navigator.clipboard.writeText(shop.addon_variant_id);
-                                                    shopify.toast.show('ID Copied!');
+                                                    navigator.clipboard.writeText(
+                                                        shop.addon_variant_id,
+                                                    );
+                                                    shopify.toast.show(
+                                                        'ID Copied!',
+                                                    );
                                                 }}
                                             >
                                                 Copy ID
@@ -488,83 +502,86 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                         </Box>
                     </Card>
 
-                    <Card padding="0">
-                        <Box padding="400">
-                            <InlineStack
-                                align="space-between"
-                                blockAlign="center"
-                            >
-                                <BlockStack gap="050">
-                                    <Text variant="headingMd" as="h3">
-                                        All Custom Fields
-                                    </Text>
-                                    <Text
-                                        variant="bodySm"
-                                        tone="subdued"
-                                        as="p"
-                                    >
-                                        Manage and monitor your personalization
-                                        rules
-                                    </Text>
-                                </BlockStack>
-                                {customFields.length > 0 && (
-                                    <Badge tone="info" progress="complete">
-                                        {customFields.length}{' '}
-                                        {customFields.length === 1
-                                            ? 'Field'
-                                            : 'Fields'}{' '}
-                                        Total
-                                    </Badge>
-                                )}
-                            </InlineStack>
-                        </Box>
-                        <Divider />
-                        {customFields.length > 0 ? (
-                            <IndexTable
-                                resourceName={resourceName}
-                                itemCount={customFields.length}
-                                selectedItemsCount={
-                                    allResourcesSelected
-                                        ? 'All'
-                                        : selectedResources.length
-                                }
-                                onSelectionChange={handleSelectionChange}
-                                promotedBulkActions={promotedBulkActions}
-                                headings={[
-                                    { title: 'Field Name' },
-                                    { title: 'Label' },
-                                    { title: 'Type' },
-                                    { title: 'Target' },
-                                    { title: 'Status' },
-                                    { title: 'Actions' },
-                                ]}
-                            >
-                                {rowMarkup}
-                            </IndexTable>
-                        ) : (
-                            <Box padding="800">
-                                <EmptyState
-                                    heading="Start building your custom fields"
-                                    action={{
-                                        content: 'Create Your First Field',
-                                        onAction: () =>
-                                            router.visit(
-                                                customField.create().url,
-                                            ),
-                                        disabled: isOverLimit,
-                                        icon: PlusIcon,
-                                    }}
-                                    image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                    <Box paddingBlockEnd="400">
+                        <Card>
+                            <Box padding="400">
+                                <InlineStack
+                                    align="space-between"
+                                    blockAlign="center"
                                 >
-                                    <p>
-                                        Collect personalized information from
-                                        your customers by adding custom fields
-                                        to products, collections, or cart.
-                                    </p>
-                                </EmptyState>
+                                    <BlockStack gap="050">
+                                        <Text variant="headingMd" as="h3">
+                                            All Custom Fields
+                                        </Text>
+                                        <Text
+                                            variant="bodySm"
+                                            tone="subdued"
+                                            as="p"
+                                        >
+                                            Manage and monitor your
+                                            personalization rules
+                                        </Text>
+                                    </BlockStack>
+                                    {customFields.length > 0 && (
+                                        <Badge tone="info" progress="complete">
+                                            {customFields.length}{' '}
+                                            {customFields.length === 1
+                                                ? 'Field'
+                                                : 'Fields'}{' '}
+                                            Total
+                                        </Badge>
+                                    )}
+                                </InlineStack>
                             </Box>
-                        )}
-                    </Card>
+                            <Divider />
+                            {customFields.length > 0 ? (
+                                <IndexTable
+                                    resourceName={resourceName}
+                                    itemCount={customFields.length}
+                                    selectedItemsCount={
+                                        allResourcesSelected
+                                            ? 'All'
+                                            : selectedResources.length
+                                    }
+                                    onSelectionChange={handleSelectionChange}
+                                    promotedBulkActions={promotedBulkActions}
+                                    headings={[
+                                        { title: 'Field Name' },
+                                        { title: 'Label' },
+                                        { title: 'Type' },
+                                        { title: 'Target' },
+                                        { title: 'Status' },
+                                        { title: 'Actions' },
+                                    ]}
+                                >
+                                    {rowMarkup}
+                                </IndexTable>
+                            ) : (
+                                <Box padding="800">
+                                    <EmptyState
+                                        heading="Start building your custom fields"
+                                        action={{
+                                            content: 'Create Your First Field',
+                                            onAction: () =>
+                                                router.visit(
+                                                    customField.create().url,
+                                                ),
+                                            disabled: isOverLimit,
+                                            icon: PlusIcon,
+                                        }}
+                                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                                    >
+                                        <p>
+                                            Collect personalized information
+                                            from your customers by adding custom
+                                            fields to products, collections, or
+                                            cart.
+                                        </p>
+                                    </EmptyState>
+                                </Box>
+                            )}
+                        </Card>
+                    </Box>
                 </BlockStack>
 
                 <Modal

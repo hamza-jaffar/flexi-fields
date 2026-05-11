@@ -18,7 +18,7 @@ export default function ShopifyLayout({
                 <Link href="/app/custom-field">Custom Fields</Link>
                 <Link href="/app/media">Media Library</Link>
                 <Link href="/app/billing">Billing</Link>
-                {/* <Link href="/app/settings">Settings</Link> */}
+                <Link href="/app/settings">Settings</Link>
             </NavMenu>
             <Frame>{children}</Frame>
         </AppProvider>

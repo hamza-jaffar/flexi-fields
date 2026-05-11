@@ -92,6 +92,11 @@ class CustomFieldController extends Controller
         return response()->json([
             'fields' => $filteredFields->values(),
             'addon_variant_id' => $addonVariantId,
+            'settings' => [
+                'summary_label' => $shop->summary_label,
+                'required_error_label' => $shop->required_error_label,
+                'addon_product_name' => $shop->addon_product_name,
+            ],
             'shop' => [
                 'domain' => $shop->shop_domain,
                 'name' => $shop->name
