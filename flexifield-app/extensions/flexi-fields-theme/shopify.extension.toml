@@ -1,0 +1,7 @@
+api_version = "2024-04"
+
+[[extensions]]
+uid = "2be0a5e0-6dff-8086-48d8-0e345f13c0a18161846b"
+type = "theme"
+name = "Flexi Fields"
+handle = "flexi-fields-theme"

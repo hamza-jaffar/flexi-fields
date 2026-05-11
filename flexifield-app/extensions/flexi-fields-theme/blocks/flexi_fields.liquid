@@ -1,0 +1,50 @@
+<div
+  id="flexi-fields-container"
+  data-shop="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-collection-ids="{{ product.collections | map: 'id' | join: ',' }}"
+  data-tags="{{ product.tags | join: ',' }}"
+  data-api-url="{{ block.settings.api_url }}"
+  data-addon-variant-id="{{ block.settings.addon_variant_id }}"
+>
+  <div class="flexi-fields-loading">Loading custom fields...</div>
+</div>
+
+<script src="{{ 'flexi-fields.js' | asset_url }}" defer></script>
+<link rel="stylesheet" href="{{ 'flexi-fields.css' | asset_url }}">
+
+{% schema %}
+{
+  "name": "Flexi Fields",
+  "target": "section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "API URL",
+      "default": "https://flexi-fields.degvora.com/api/custom-fields"
+    },
+    {
+      "type": "text",
+      "id": "addon_variant_id",
+      "label": "Addon Variant ID (for prices)",
+      "info": "Create a hidden product with price $1.00 and paste its Variant ID here."
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "transparent"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#000000"
+    }
+  ]
+}
+{% endschema %}
