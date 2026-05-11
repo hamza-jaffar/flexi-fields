@@ -19,21 +19,21 @@ class ShopifyHeaders
 
         $shop = $request->query('shop') ?? $request->header('X-Shop-Domain') ?? session('shopify_shop');
 
-        // Always allow Shopify Admin to frame the app
-        $csp = "frame-ancestors https://admin.shopify.com https://*.myshopify.com";
-        
+        // Explicitly allow Shopify Admin and the store domain
+        $ancestors = ['https://admin.shopify.com', 'https://*.myshopify.com'];
         if ($shop) {
-            $csp .= " https://{$shop}";
+            $ancestors[] = "https://{$shop}";
         }
 
-        $response->headers->set('Content-Security-Policy', $csp . ";");
+        $csp = "frame-ancestors " . implode(' ', $ancestors) . ";";
+        $response->headers->set('Content-Security-Policy', $csp);
 
-        // Force removal of X-Frame-Options to allow iFrame loading
+        // Remove X-Frame-Options completely. 
+        // We do this via the response object AND the PHP global header list.
         $response->headers->remove('X-Frame-Options');
         
-        // Some servers/middlewares might re-add it, so we ensure it's gone
-        if (method_exists($response, 'header')) {
-            $response->header('X-Frame-Options', null);
+        if (function_exists('header_remove')) {
+            header_remove('X-Frame-Options');
         }
 
         return $response;
