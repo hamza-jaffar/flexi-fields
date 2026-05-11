@@ -1,0 +1,1084 @@
+import ShopifyLayout from '@/layouts/shopify-layout';
+import {
+    Page,
+    Layout,
+    Card,
+    FormLayout,
+    TextField,
+    Select,
+    Checkbox,
+    BlockStack,
+    Text,
+    Banner,
+    InlineGrid,
+    Divider,
+    Box,
+    Tabs,
+    Button,
+    Icon,
+    InlineStack,
+} from '@shopify/polaris';
+import React, { useState, useCallback } from 'react';
+import { Head, useForm, router } from '@inertiajs/react';
+import customFieldRoutes from '@/routes/app/custom-field';
+import { Switch } from '@/components/ui/switch'; // For preview
+import { DeleteIcon, PlusIcon } from '@shopify/polaris-icons';
+import Editor from 'react-simple-code-editor';
+import { highlight, languages } from 'prismjs';
+import 'prismjs/components/prism-css';
+import 'prismjs/themes/prism.css';
+import CustomFieldPreview from '@/components/CustomFieldPreview';
+import CustomFieldCSSHint from '@/components/CustomFieldCSSHint';
+
+// Fix for library export issues in some environments
+const CodeEditor = (Editor as any).default || Editor;
+
+interface Props {
+    shop: any;
+    allFields: any[];
+}
+
+const CreateCustomFieldPage = ({ shop, allFields }: Props) => {
+    const hasFeature = (key: string) => {
+        const features = shop.subscription?.plan?.internal_features || [];
+        const feature = features.find((f: any) => f.feature_key === key);
+        return feature ? feature.feature_value : false;
+    };
+
+    const hasAdvancedFields = hasFeature('advanced_field_types');
+    const hasPriceAddons = hasFeature('price_addons');
+    const hasConditionalLogic = hasFeature('conditional_logic');
+    const hasCustomStyling = hasFeature('custom_styling');
+
+    const { data, setData, post, processing, errors } = useForm({
+        name: '',
+        slug: '',
+        type: 'text',
+        label: '',
+        placeholder: '',
+        help_text: '',
+        is_required: false,
+        min_length: '',
+        max_length: '',
+        min_value: '',
+        max_value: '',
+        has_price_addon: false,
+        price: '0.00',
+        is_active: true,
+        sort_order: 0,
+        target: 'product',
+        target_ids: [],
+        options: [{ label: 'Option 1', value: 'option_1' }],
+        settings: {
+            custom_css: '',
+        },
+        conditions: [],
+        logic_type: 'all', // 'all' for AND, 'any' for OR
+    });
+
+    const [selectedTab, setSelectedTab] = useState(0);
+
+    const tabs = [
+        {
+            id: 'general',
+            content: 'General',
+            accessibilityLabel: 'General information',
+        },
+        {
+            id: 'setup',
+            content: 'Field Setup',
+            accessibilityLabel: 'Field setup and type',
+        },
+        {
+            id: 'appearance',
+            content: 'Appearance',
+            accessibilityLabel: 'Appearance',
+        },
+        {
+            id: 'validation',
+            content: 'Validation & Pricing',
+            accessibilityLabel: 'Validation and pricing',
+        },
+        {
+            id: 'conditions',
+            content: 'Conditions',
+            accessibilityLabel: 'Conditional logic',
+        },
+    ];
+
+    const handleSubmit = () => {
+        post(customFieldRoutes.store().url);
+    };
+
+    const handleNameChange = (value: string) => {
+        setData((prev) => ({
+            ...prev,
+            name: value,
+            slug: value
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)+/g, ''),
+            label: prev.label || value,
+        }));
+    };
+
+    const addOption = () => {
+        setData('options', [
+            ...data.options,
+            {
+                label: `Option ${data.options.length + 1}`,
+                value: `option_${data.options.length + 1}`,
+            },
+        ]);
+    };
+
+    const updateOption = (index: number, key: string, value: string) => {
+        const newOptions = [...data.options];
+        newOptions[index] = { ...newOptions[index], [key]: value };
+        setData('options', newOptions);
+    };
+
+    const removeOption = (index: number) => {
+        const newOptions = [...data.options];
+        newOptions.splice(index, 1);
+        setData('options', newOptions);
+    };
+
+    const addCondition = () => {
+        setData('conditions', [
+            ...data.conditions,
+            { field_id: '', operator: 'equals', value: '' },
+        ]);
+    };
+
+    const updateCondition = (index: number, key: string, value: string) => {
+        const newConditions = [...data.conditions];
+        newConditions[index] = { ...newConditions[index], [key]: value };
+        setData('conditions', newConditions);
+    };
+
+    const removeCondition = (index: number) => {
+        const newConditions = [...data.conditions];
+        newConditions.splice(index, 1);
+        setData('conditions', newConditions);
+    };
+
+
+    return (
+        <ShopifyLayout>
+            <Head title="Create Custom Field" />
+            <Page
+                breadcrumbs={[
+                    {
+                        content: 'Custom Fields',
+                        onAction: () =>
+                            router.visit(customFieldRoutes.index().url),
+                    },
+                ]}
+                title="Create Custom Field"
+                primaryAction={{
+                    content: 'Save Field',
+                    onAction: handleSubmit,
+                    loading: processing,
+                }}
+            >
+                <Layout>
+                    <Layout.Section>
+                        <Card padding="0">
+                            <Tabs
+                                tabs={tabs}
+                                selected={selectedTab}
+                                onSelect={setSelectedTab}
+                            >
+                                <Box padding="500">
+                                    {selectedTab === 0 && (
+                                        <BlockStack gap="400">
+                                            <FormLayout>
+                                                <FormLayout.Group>
+                                                    <TextField
+                                                        label="Internal Name"
+                                                        value={data.name}
+                                                        onChange={
+                                                            handleNameChange
+                                                        }
+                                                        autoComplete="off"
+                                                        error={errors.name}
+                                                        helpText="For internal reference"
+                                                    />
+                                                    <TextField
+                                                        label="Unique Handle"
+                                                        value={data.slug}
+                                                        onChange={(val) =>
+                                                            setData('slug', val)
+                                                        }
+                                                        autoComplete="off"
+                                                        error={errors.slug}
+                                                    />
+                                                </FormLayout.Group>
+
+                                                <FormLayout.Group>
+                                                    <Select
+                                                        label="Field Target"
+                                                        options={[
+                                                            {
+                                                                label: 'Product',
+                                                                value: 'product',
+                                                            },
+                                                            {
+                                                                label: 'Collection',
+                                                                value: 'collection',
+                                                            },
+                                                            // { label: 'Cart', value: 'cart' },
+                                                            // { label: 'Checkout', value: 'checkout' },
+                                                        ]}
+                                                        value={data.target}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'target',
+                                                                val,
+                                                            )
+                                                        }
+                                                        helpText="Where should this field appear?"
+                                                    />
+                                                    <TextField
+                                                        label="Sort Order"
+                                                        type="number"
+                                                        value={data.sort_order.toString()}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'sort_order',
+                                                                parseInt(
+                                                                    val,
+                                                                    10,
+                                                                ) || 0,
+                                                            )
+                                                        }
+                                                        autoComplete="off"
+                                                        helpText="Lower numbers appear first"
+                                                    />
+                                                </FormLayout.Group>
+
+                                                {(data.target === 'product' ||
+                                                    data.target ===
+                                                        'collection') && (
+                                                    <Box paddingBlockStart="200">
+                                                        <Text
+                                                            as="p"
+                                                            variant="bodyMd"
+                                                        >
+                                                            Assign to specific{' '}
+                                                            {data.target}s
+                                                            (Optional). If none
+                                                            selected, applies to
+                                                            all.
+                                                        </Text>
+                                                        <div
+                                                            style={{
+                                                                marginTop:
+                                                                    '8px',
+                                                            }}
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className="cursor-pointer rounded border bg-white px-4 py-2 shadow-sm hover:bg-gray-50"
+                                                                onClick={async () => {
+                                                                    const selection =
+                                                                        await window.shopify.resourcePicker(
+                                                                            {
+                                                                                type: data.target,
+                                                                                multiple: true,
+                                                                            },
+                                                                        );
+                                                                    if (
+                                                                        selection
+                                                                    )
+                                                                        setData(
+                                                                            'target_ids',
+                                                                            selection.map(
+                                                                                (
+                                                                                    s: any,
+                                                                                ) =>
+                                                                                    s.id,
+                                                                            ),
+                                                                        );
+                                                                }}
+                                                            >
+                                                                Select{' '}
+                                                                {data.target ===
+                                                                'product'
+                                                                    ? 'Products'
+                                                                    : 'Collections'}{' '}
+                                                                (
+                                                                {data.target_ids
+                                                                    ? data
+                                                                          .target_ids
+                                                                          .length
+                                                                    : 0}{' '}
+                                                                selected)
+                                                            </button>
+                                                            {data.target_ids &&
+                                                                data.target_ids
+                                                                    .length >
+                                                                    0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="ml-4 cursor-pointer text-sm text-red-600 hover:underline"
+                                                                        onClick={() =>
+                                                                            setData(
+                                                                                'target_ids',
+                                                                                [],
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Clear
+                                                                        selection
+                                                                    </button>
+                                                                )}
+                                                        </div>
+                                                    </Box>
+                                                )}
+
+                                                <Checkbox
+                                                    label="Active"
+                                                    checked={data.is_active}
+                                                    onChange={(val) =>
+                                                        setData(
+                                                            'is_active',
+                                                            val,
+                                                        )
+                                                    }
+                                                    helpText="If unchecked, this field will be hidden from the storefront."
+                                                />
+                                            </FormLayout>
+                                        </BlockStack>
+                                    )}
+
+                                    {selectedTab === 1 && (
+                                        <BlockStack gap="400">
+                                            {!hasAdvancedFields && (
+                                                <Banner tone="info">
+                                                    Upgrade to unlock Advanced
+                                                    fields.
+                                                </Banner>
+                                            )}
+                                            <Select
+                                                label="Field Type"
+                                                options={[
+                                                    {
+                                                        label: 'Single line text',
+                                                        value: 'text',
+                                                    },
+                                                    {
+                                                        label: 'Multi-line text',
+                                                        value: 'textarea',
+                                                    },
+                                                    {
+                                                        label: 'Number',
+                                                        value: 'number',
+                                                    },
+                                                    {
+                                                        label: 'Select dropdown',
+                                                        value: 'select',
+                                                    },
+                                                    {
+                                                        label: 'Checkbox',
+                                                        value: 'checkbox',
+                                                    },
+                                                    {
+                                                        label: 'Switch',
+                                                        value: 'switch',
+                                                    },
+                                                    {
+                                                        label: 'File Upload (Requires Advanced)',
+                                                        value: 'file_upload',
+                                                        disabled:
+                                                            !hasAdvancedFields,
+                                                    },
+                                                    {
+                                                        label: 'Date Picker (Requires Advanced)',
+                                                        value: 'date_picker',
+                                                        disabled:
+                                                            !hasAdvancedFields,
+                                                    },
+                                                    {
+                                                        label: 'Color Swatch (Requires Advanced)',
+                                                        value: 'color_swatch',
+                                                        disabled:
+                                                            !hasAdvancedFields,
+                                                    },
+                                                ]}
+                                                value={data.type}
+                                                onChange={(val) =>
+                                                    setData('type', val)
+                                                }
+                                            />
+
+                                            {(data.type === 'select' ||
+                                                data.type ===
+                                                    'color_swatch') && (
+                                                <Card background="bg-surface-secondary">
+                                                    <BlockStack gap="400">
+                                                        <BlockStack gap="200">
+                                                            <Text
+                                                                variant="headingSm"
+                                                                as="h3"
+                                                            >
+                                                                Dropdown Options
+                                                            </Text>
+                                                            <Text
+                                                                as="p"
+                                                                variant="bodySm"
+                                                                tone="subdued"
+                                                            >
+                                                                Define the
+                                                                available
+                                                                options for this
+                                                                field.
+                                                            </Text>
+                                                        </BlockStack>
+
+                                                        {data.options.map(
+                                                            (
+                                                                opt: any,
+                                                                index: number,
+                                                            ) => (
+                                                                <InlineStack
+                                                                    key={index}
+                                                                    gap="300"
+                                                                    align="start"
+                                                                    blockAlign="center"
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            flex: 1,
+                                                                        }}
+                                                                    >
+                                                                        <TextField
+                                                                            label="Label"
+                                                                            labelHidden
+                                                                            placeholder="Label (e.g. Red)"
+                                                                            value={
+                                                                                opt.label
+                                                                            }
+                                                                            onChange={(
+                                                                                val,
+                                                                            ) =>
+                                                                                updateOption(
+                                                                                    index,
+                                                                                    'label',
+                                                                                    val,
+                                                                                )
+                                                                            }
+                                                                            autoComplete="off"
+                                                                        />
+                                                                    </div>
+                                                                    <div
+                                                                        style={{
+                                                                            flex: 1,
+                                                                        }}
+                                                                    >
+                                                                        <TextField
+                                                                            label="Value"
+                                                                            labelHidden
+                                                                            placeholder={
+                                                                                data.type ===
+                                                                                'color_swatch'
+                                                                                    ? 'Value (e.g. #FF0000)'
+                                                                                    : 'Value (e.g. red)'
+                                                                            }
+                                                                            value={
+                                                                                opt.value
+                                                                            }
+                                                                            onChange={(
+                                                                                val,
+                                                                            ) =>
+                                                                                updateOption(
+                                                                                    index,
+                                                                                    'value',
+                                                                                    val,
+                                                                                )
+                                                                            }
+                                                                            autoComplete="off"
+                                                                        />
+                                                                    </div>
+                                                                    <Button
+                                                                        icon={
+                                                                            DeleteIcon
+                                                                        }
+                                                                        tone="critical"
+                                                                        accessibilityLabel="Remove option"
+                                                                        onClick={() =>
+                                                                            removeOption(
+                                                                                index,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </InlineStack>
+                                                            ),
+                                                        )}
+
+                                                        <div
+                                                            style={{
+                                                                marginTop:
+                                                                    '8px',
+                                                            }}
+                                                        >
+                                                            <Button
+                                                                icon={PlusIcon}
+                                                                onClick={
+                                                                    addOption
+                                                                }
+                                                            >
+                                                                Add Option
+                                                            </Button>
+                                                        </div>
+                                                    </BlockStack>
+                                                </Card>
+                                            )}
+                                        </BlockStack>
+                                    )}
+
+                                    {selectedTab === 2 && (
+                                        <BlockStack gap="400">
+                                            <TextField
+                                                label="Field Label"
+                                                value={data.label}
+                                                onChange={(val) =>
+                                                    setData('label', val)
+                                                }
+                                                autoComplete="off"
+                                                helpText="What the customer will see"
+                                            />
+                                            <TextField
+                                                label="Placeholder text"
+                                                value={data.placeholder}
+                                                onChange={(val) =>
+                                                    setData('placeholder', val)
+                                                }
+                                                autoComplete="off"
+                                            />
+                                            <TextField
+                                                label="Help text / Tooltip"
+                                                value={data.help_text}
+                                                onChange={(val) =>
+                                                    setData('help_text', val)
+                                                }
+                                                autoComplete="off"
+                                            />
+
+                                            {!hasCustomStyling && (
+                                                <Banner tone="info">
+                                                    Custom styling requires a
+                                                    higher tier plan.
+                                                </Banner>
+                                            )}
+                                            <Box paddingBlockEnd="200">
+                                                <Text
+                                                    variant="bodyMd"
+                                                    as="p"
+                                                    fontWeight="medium"
+                                                >
+                                                    Custom CSS Code
+                                                </Text>
+                                            </Box>
+                                            <div
+                                                style={{
+                                                    fontFamily:
+                                                        '"Fira code", "Fira Mono", monospace',
+                                                    fontSize: 12,
+                                                    border: '1px solid #dfe3e8',
+                                                    borderRadius: '4px',
+                                                    backgroundColor: '#f6f6f7',
+                                                    minHeight: '150px',
+                                                    opacity: hasCustomStyling
+                                                        ? 1
+                                                        : 0.5,
+                                                    pointerEvents:
+                                                        hasCustomStyling
+                                                            ? 'auto'
+                                                            : 'none',
+                                                }}
+                                            >
+                                                <CodeEditor
+                                                    value={
+                                                        data.settings
+                                                            .custom_css || ''
+                                                    }
+                                                    onValueChange={(code) =>
+                                                        setData('settings', {
+                                                            ...data.settings,
+                                                            custom_css: code,
+                                                        })
+                                                    }
+                                                    highlight={(code) =>
+                                                        highlight(
+                                                            code,
+                                                            languages.css,
+                                                            'css',
+                                                        )
+                                                    }
+                                                    padding={15}
+                                                    style={{
+                                                        fontFamily:
+                                                            '"Fira code", "Fira Mono", monospace',
+                                                        fontSize: 12,
+                                                        minHeight: '150px',
+                                                    }}
+                                                    placeholder={`/* Your CSS here (Auto-scoped to this field) */\n.flexi-field-label {\n  color: red;\n  font-weight: bold;\n}\n\ninput {\n  border: 2px solid blue;\n}`}
+                                                />
+                                            </div>
+                                            <Box paddingBlockStart="100">
+                                                <CustomFieldCSSHint data={data} />
+                                            </Box>
+                                        </BlockStack>
+                                    )}
+
+                                    {selectedTab === 3 && (
+                                        <BlockStack gap="400">
+                                            <Checkbox
+                                                label="Make this field required"
+                                                checked={data.is_required}
+                                                onChange={(val) =>
+                                                    setData('is_required', val)
+                                                }
+                                            />
+
+                                            {(data.type === 'text' ||
+                                                data.type === 'textarea') && (
+                                                <InlineGrid
+                                                    columns={2}
+                                                    gap="400"
+                                                >
+                                                    <TextField
+                                                        label="Min length"
+                                                        type="number"
+                                                        value={data.min_length}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'min_length',
+                                                                val,
+                                                            )
+                                                        }
+                                                        autoComplete="off"
+                                                    />
+                                                    <TextField
+                                                        label="Max length"
+                                                        type="number"
+                                                        value={data.max_length}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'max_length',
+                                                                val,
+                                                            )
+                                                        }
+                                                        autoComplete="off"
+                                                    />
+                                                </InlineGrid>
+                                            )}
+
+                                            {data.type === 'number' && (
+                                                <InlineGrid
+                                                    columns={2}
+                                                    gap="400"
+                                                >
+                                                    <TextField
+                                                        label="Min value"
+                                                        type="number"
+                                                        value={data.min_value}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'min_value',
+                                                                val,
+                                                            )
+                                                        }
+                                                        autoComplete="off"
+                                                    />
+                                                    <TextField
+                                                        label="Max value"
+                                                        type="number"
+                                                        value={data.max_value}
+                                                        onChange={(val) =>
+                                                            setData(
+                                                                'max_value',
+                                                                val,
+                                                            )
+                                                        }
+                                                        autoComplete="off"
+                                                    />
+                                                </InlineGrid>
+                                            )}
+
+                                            <Divider />
+                                            <Text variant="headingMd" as="h2">
+                                                Pricing Add-ons
+                                            </Text>
+                                            {!hasPriceAddons && (
+                                                <Banner tone="info">
+                                                    Price add-ons require a
+                                                    higher tier plan.
+                                                </Banner>
+                                            )}
+                                            <Checkbox
+                                                label="Add a cost to this field"
+                                                checked={data.has_price_addon}
+                                                onChange={(val) =>
+                                                    setData(
+                                                        'has_price_addon',
+                                                        val,
+                                                    )
+                                                }
+                                                disabled={!hasPriceAddons}
+                                            />
+                                            {data.has_price_addon && (
+                                                <TextField
+                                                    label="Additional Price"
+                                                    type="number"
+                                                    prefix="$"
+                                                    value={data.price}
+                                                    onChange={(val) =>
+                                                        setData('price', val)
+                                                    }
+                                                    autoComplete="off"
+                                                />
+                                            )}
+                                        </BlockStack>
+                                    )}
+
+                                    {selectedTab === 4 && (
+                                        <BlockStack gap="400">
+                                            <BlockStack gap="200">
+                                                <Text
+                                                    variant="headingMd"
+                                                    as="h2"
+                                                >
+                                                    Conditional Logic
+                                                </Text>
+                                                <Text
+                                                    as="p"
+                                                    variant="bodyMd"
+                                                    tone="subdued"
+                                                >
+                                                    Show this field only when
+                                                    certain conditions are met
+                                                    on other fields.
+                                                </Text>
+                                            </BlockStack>
+
+                                            {!hasConditionalLogic ? (
+                                                <Banner tone="info">
+                                                    Upgrade your plan to unlock
+                                                    conditional logic rules.
+                                                </Banner>
+                                            ) : (
+                                                <BlockStack gap="400">
+                                                    <Box paddingBlockEnd="200">
+                                                        <Select
+                                                            label="Satisfy"
+                                                            options={[
+                                                                {
+                                                                    label: 'All conditions (AND)',
+                                                                    value: 'all',
+                                                                },
+                                                                {
+                                                                    label: 'Any condition (OR)',
+                                                                    value: 'any',
+                                                                },
+                                                            ]}
+                                                            value={
+                                                                data.logic_type
+                                                            }
+                                                            onChange={(val) =>
+                                                                setData(
+                                                                    'logic_type',
+                                                                    val,
+                                                                )
+                                                            }
+                                                        />
+                                                    </Box>
+
+                                                    {data.conditions.length >
+                                                        0 && (
+                                                        <div className="conditions-container">
+                                                            <BlockStack gap="400">
+                                                                {data.conditions.map(
+                                                                    (
+                                                                        condition: any,
+                                                                        index: number,
+                                                                    ) => {
+                                                                        const selectedField =
+                                                                            allFields.find(
+                                                                                (
+                                                                                    f,
+                                                                                ) =>
+                                                                                    f.id.toString() ===
+                                                                                    condition.field_id.toString(),
+                                                                            );
+
+                                                                        return (
+                                                                            <div
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="condition-row"
+                                                                            >
+                                                                                <InlineStack
+                                                                                    gap="300"
+                                                                                    align="start"
+                                                                                    blockAlign="center"
+                                                                                >
+                                                                                    <div
+                                                                                        style={{
+                                                                                            flex: 1.5,
+                                                                                        }}
+                                                                                    >
+                                                                                        <Select
+                                                                                            label="If field"
+                                                                                            labelHidden
+                                                                                            options={[
+                                                                                                {
+                                                                                                    label: 'Select a field',
+                                                                                                    value: '',
+                                                                                                    disabled: true,
+                                                                                                },
+                                                                                                ...allFields.map(
+                                                                                                    (
+                                                                                                        f,
+                                                                                                    ) => ({
+                                                                                                        label: f.name,
+                                                                                                        value: f.id.toString(),
+                                                                                                    }),
+                                                                                                ),
+                                                                                            ]}
+                                                                                            value={condition.field_id.toString()}
+                                                                                            onChange={(
+                                                                                                val,
+                                                                                            ) =>
+                                                                                                updateCondition(
+                                                                                                    index,
+                                                                                                    'field_id',
+                                                                                                    val,
+                                                                                                )
+                                                                                            }
+                                                                                        />
+                                                                                    </div>
+                                                                                    <div
+                                                                                        style={{
+                                                                                            flex: 1,
+                                                                                        }}
+                                                                                    >
+                                                                                        <Select
+                                                                                            label="Operator"
+                                                                                            labelHidden
+                                                                                            options={[
+                                                                                                {
+                                                                                                    label: 'Equals',
+                                                                                                    value: 'equals',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Not equals',
+                                                                                                    value: 'not_equals',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Contains',
+                                                                                                    value: 'contains',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Greater than',
+                                                                                                    value: 'greater_than',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Less than',
+                                                                                                    value: 'less_than',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Is empty',
+                                                                                                    value: 'is_empty',
+                                                                                                },
+                                                                                                {
+                                                                                                    label: 'Is not empty',
+                                                                                                    value: 'is_not_empty',
+                                                                                                },
+                                                                                            ]}
+                                                                                            value={
+                                                                                                condition.operator
+                                                                                            }
+                                                                                            onChange={(
+                                                                                                val,
+                                                                                            ) =>
+                                                                                                updateCondition(
+                                                                                                    index,
+                                                                                                    'operator',
+                                                                                                    val,
+                                                                                                )
+                                                                                            }
+                                                                                        />
+                                                                                    </div>
+
+                                                                                    {condition.operator !==
+                                                                                        'is_empty' &&
+                                                                                        condition.operator !==
+                                                                                            'is_not_empty' && (
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    flex: 1,
+                                                                                                }}
+                                                                                            >
+                                                                                                {selectedField &&
+                                                                                                (selectedField.type ===
+                                                                                                    'select' ||
+                                                                                                    selectedField.type ===
+                                                                                                        'color_swatch') ? (
+                                                                                                    <Select
+                                                                                                        label="Value"
+                                                                                                        labelHidden
+                                                                                                        options={[
+                                                                                                            {
+                                                                                                                label: 'Select value',
+                                                                                                                value: '',
+                                                                                                                disabled: true,
+                                                                                                            },
+                                                                                                            ...(
+                                                                                                                selectedField.options ||
+                                                                                                                []
+                                                                                                            ).map(
+                                                                                                                (
+                                                                                                                    opt: any,
+                                                                                                                ) => ({
+                                                                                                                    label: opt.label,
+                                                                                                                    value: opt.value,
+                                                                                                                }),
+                                                                                                            ),
+                                                                                                        ]}
+                                                                                                        value={
+                                                                                                            condition.value
+                                                                                                        }
+                                                                                                        onChange={(
+                                                                                                            val,
+                                                                                                        ) =>
+                                                                                                            updateCondition(
+                                                                                                                index,
+                                                                                                                'value',
+                                                                                                                val,
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                ) : selectedField &&
+                                                                                                  (selectedField.type ===
+                                                                                                      'checkbox' ||
+                                                                                                      selectedField.type ===
+                                                                                                          'switch') ? (
+                                                                                                    <Select
+                                                                                                        label="Value"
+                                                                                                        labelHidden
+                                                                                                        options={[
+                                                                                                            {
+                                                                                                                label: 'Checked',
+                                                                                                                value: 'true',
+                                                                                                            },
+                                                                                                            {
+                                                                                                                label: 'Unchecked',
+                                                                                                                value: 'false',
+                                                                                                            },
+                                                                                                        ]}
+                                                                                                        value={
+                                                                                                            condition.value
+                                                                                                        }
+                                                                                                        onChange={(
+                                                                                                            val,
+                                                                                                        ) =>
+                                                                                                            updateCondition(
+                                                                                                                index,
+                                                                                                                'value',
+                                                                                                                val,
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                ) : (
+                                                                                                    <TextField
+                                                                                                        label="Value"
+                                                                                                        labelHidden
+                                                                                                        placeholder="Value"
+                                                                                                        value={
+                                                                                                            condition.value
+                                                                                                        }
+                                                                                                        onChange={(
+                                                                                                            val,
+                                                                                                        ) =>
+                                                                                                            updateCondition(
+                                                                                                                index,
+                                                                                                                'value',
+                                                                                                                val,
+                                                                                                            )
+                                                                                                        }
+                                                                                                        autoComplete="off"
+                                                                                                    />
+                                                                                                )}
+                                                                                            </div>
+                                                                                        )}
+
+                                                                                    <Button
+                                                                                        icon={
+                                                                                            DeleteIcon
+                                                                                        }
+                                                                                        tone="critical"
+                                                                                        onClick={() =>
+                                                                                            removeCondition(
+                                                                                                index,
+                                                                                            )
+                                                                                        }
+                                                                                    />
+                                                                                </InlineStack>
+                                                                            </div>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </BlockStack>
+                                                        </div>
+                                                    )}
+
+                                                    <div
+                                                        style={{
+                                                            marginTop: '8px',
+                                                        }}
+                                                    >
+                                                        <Button
+                                                            icon={PlusIcon}
+                                                            onClick={
+                                                                addCondition
+                                                            }
+                                                        >
+                                                            Add Condition
+                                                        </Button>
+                                                    </div>
+                                                </BlockStack>
+                                            )}
+                                        </BlockStack>
+                                    )}
+                                </Box>
+                            </Tabs>
+                        </Card>
+                    </Layout.Section>
+
+                    <Layout.Section variant="oneThird">
+                        <div style={{ position: 'sticky', top: '24px' }}>
+                            <BlockStack gap="400">
+                                <Card padding="500">
+                                    <BlockStack gap="400">
+                                        <Text variant="headingMd" as="h2">
+                                            Storefront Preview
+                                        </Text>
+                                        <Box paddingBlockStart="200">
+                                            <CustomFieldPreview data={data} />
+                                        </Box>
+                                    </BlockStack>
+                                </Card>
+                            </BlockStack>
+                        </div>
+                    </Layout.Section>
+                </Layout>
+            </Page>
+        </ShopifyLayout>
+    );
+};
+
+export default CreateCustomFieldPage;
