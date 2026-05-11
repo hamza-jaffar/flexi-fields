@@ -32,17 +32,26 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="icon" href="/logo.jpg" type="image/jpeg">
+        <link rel="apple-touch-icon" href="/logo.jpg">
+
+        <!-- SEO Meta Tags -->
+        <title>Flexi Fields - Custom Fields for Shopify</title>
+        <meta name="description" content="Add dynamic custom fields and price addons to your Shopify store with ease.">
+        <meta property="og:title" content="Flexi Fields - Custom Fields for Shopify">
+        <meta property="og:description" content="Add dynamic custom fields and price addons to your Shopify store with ease.">
+        <meta property="og:image" content="/logo.jpg">
+        <meta property="og:type" content="website">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Flexi Fields - Custom Fields for Shopify">
+        <meta name="twitter:description" content="Add dynamic custom fields and price addons to your Shopify store with ease.">
+        <meta name="twitter:image" content="/logo.jpg">
 
         @fonts
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
-        <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
-        </x-inertia::head>
+        <x-inertia::head />
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
