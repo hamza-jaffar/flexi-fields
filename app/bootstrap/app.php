@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'shopify.header' => ShopifyHeaders::class,
             'shopify.verify' => VerifyShopifyRequest::class,
+            'shopify.webhook' => \App\Http\Middleware\VerifyShopifyWebhook::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

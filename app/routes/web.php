@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Route;
 Route::group([], function () {
     Route::get('/', [AuthController::class, 'index'])->name('home');
 
-    Route::post('webhooks/app/uninstalled', [WebhookController::class, 'handleUninstall'])
-        ->middleware(VerifyShopifyWebhook::class);
+    Route::prefix('webhooks')->middleware('shopify.webhook')->group(function () {
+        Route::post('app/uninstalled', [WebhookController::class, 'handleUninstall']);
+        Route::post('customers/data_request', [WebhookController::class, 'customersDataRequest']);
+        Route::post('customers/redact', [WebhookController::class, 'customersRedact']);
+        Route::post('shop/redact', [WebhookController::class, 'shopRedact']);
+    });
 
     Route::get('auth', [AuthController::class, 'auth'])->name('auth');
     Route::get('auth/callback', [AuthController::class, 'callback'])->name('auth.callback');

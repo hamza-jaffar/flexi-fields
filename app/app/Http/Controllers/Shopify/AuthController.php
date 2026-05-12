@@ -98,6 +98,12 @@ class AuthController extends Controller
             session(['shopify_nonce' => $nonce]);
             session()->save();
 
+            Log::debug('OAuth Initiation', [
+                'session_id' => session()->getId(),
+                'nonce' => $nonce,
+                'shop' => $shop
+            ]);
+
             // Construct the Shopify OAuth URL
             $authUrl = "https://{$shop}/admin/oauth/authorize?" . http_build_query([
                 'client_id' => $apiKey,
@@ -106,13 +112,6 @@ class AuthController extends Controller
                 'state' => $nonce,
                 'grant_options[]' => 'value', // Can be 'per-user' for online tokens
             ]);
-
-            /**
-             * Frame-Busting Redirect
-             * Because the app is loaded in an iFrame, we must use JavaScript
-             * to redirect the top-level window to Shopify's auth page.
-             */
-            // return response("<!DOCTYPE html><html><head><script>window.top.location.href = '{$authUrl}';</script></head><body>Redirecting to Shopify...</body></html>");
 
             return Inertia::render('frontend/redirect', [
                 'authUrl' => $authUrl
@@ -137,9 +136,20 @@ class AuthController extends Controller
         $code = $request->query('code');
         $state = $request->query('state');
 
+        Log::debug('OAuth Callback', [
+            'session_id' => session()->getId(),
+            'state_from_request' => $state,
+            'nonce_from_session' => session('shopify_nonce'),
+            'shop' => $shop
+        ]);
+
         // Security Check 1: Verify the Nonce (State)
         if (!$state || $state !== session('shopify_nonce')) {
-            Log::warning('Security Alert: Invalid nonce/state detected during callback.');
+            Log::warning('Security Alert: Invalid nonce/state detected during callback.', [
+                'request_state' => $state,
+                'session_nonce' => session('shopify_nonce'),
+                'session_id' => session()->getId()
+            ]);
             return response()->json(['error' => 'Invalid state. Possible CSRF attempt.'], 401);
         }
 
@@ -201,8 +211,8 @@ class AuthController extends Controller
                 ]
             );
 
-            // Housekeeping: Register mandatory webhooks
-            $this->registerUninstallWebhook($shop, $accessToken);
+            // Housekeeping: Register necessary webhooks
+            $this->registerWebhooks($shop, $accessToken);
 
             // Clean up session security data
             session()->forget('shopify_nonce');
@@ -218,29 +228,34 @@ class AuthController extends Controller
     }
 
     /**
-     * Webhook Registration: App Uninstalled
+     * Webhook Registration
      *
-     * Notifies our server when a merchant deletes the app so we can
-     * clean up data or stop billing.
+     * Registers necessary webhooks with Shopify to ensure our app stays in sync.
      */
-    private function registerUninstallWebhook(string $shop, string $accessToken): void
+    private function registerWebhooks(string $shop, string $accessToken): void
     {
-        $webhookUrl = config('app.url') . '/webhooks/app/uninstalled';
+        $topics = [
+            'app/uninstalled' => '/webhooks/app/uninstalled',
+        ];
 
-        $response = Http::withHeaders([
-            'X-Shopify-Access-Token' => $accessToken,
-        ])->post("https://{$shop}/admin/api/2024-04/webhooks.json", [
-                    'webhook' => [
-                        'topic' => 'app/uninstalled',
-                        'address' => $webhookUrl,
-                        'format' => 'json',
-                    ],
-                ]);
+        foreach ($topics as $topic => $path) {
+            $webhookUrl = config('app.url') . $path;
 
-        if ($response->successful()) {
-            Log::info("Webhook Success: Uninstall listener registered for {$shop}");
-        } else {
-            Log::error("Webhook Failure: Could not register uninstall for {$shop}: " . $response->body());
+            $response = Http::withHeaders([
+                'X-Shopify-Access-Token' => $accessToken,
+            ])->post("https://{$shop}/admin/api/2024-04/webhooks.json", [
+                'webhook' => [
+                    'topic' => $topic,
+                    'address' => $webhookUrl,
+                    'format' => 'json',
+                ],
+            ]);
+
+            if ($response->successful()) {
+                Log::info("Webhook Success: {$topic} registered for {$shop}");
+            } else {
+                Log::error("Webhook Failure: Could not register {$topic} for {$shop}: " . $response->body());
+            }
         }
     }
 

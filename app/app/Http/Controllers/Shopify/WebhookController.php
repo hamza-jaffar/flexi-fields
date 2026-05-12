@@ -3,34 +3,71 @@
 namespace App\Http\Controllers\Shopify;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
-    public function handleUninstall(Request $request)
+    /**
+     * Mandatory Compliance: Customers Data Request
+     * 
+     * Shopify sends this webhook when a store owner requests data on behalf of a customer.
+     */
+    public function customersDataRequest(Request $request)
     {
-        $domain = $request->header('X-Shopify-Shop-Domain');
+        $payload = $request->all();
+        Log::info('Shopify Compliance: customers/data_request received', $payload);
+
+        // Your logic to collect and provide customer data goes here.
+        // For now, we return 200 to satisfy Shopify's check.
         
-        Log::info("Uninstall webhook received for {$domain}");
-
-        // Find the shop and mark as uninstalled
-        $shop = Shop::where('shop_domain', $domain)->first();
-
-        if ($shop) {
-            $shop->update([
-                'uninstalled_at' => now(),
-                'access_token' => null, // Clear token as it's no longer valid
-            ]);
-            Log::info("Shop {$domain} marked as uninstalled.");
-        }
-
-        return response()->json(['message' => 'Webhook processed'], 200);
+        return response()->json(['status' => 'acknowledged'], 200);
     }
 
     /**
-     * Middleware-like check for Shopify Webhook signatures could go here
-     * or in a dedicated middleware.
+     * Mandatory Compliance: Customers Redact
+     * 
+     * Shopify sends this webhook when a store owner requests that a customer's data be deleted.
      */
+    public function customersRedact(Request $request)
+    {
+        $payload = $request->all();
+        Log::info('Shopify Compliance: customers/redact received', $payload);
+
+        // Your logic to delete customer data goes here.
+        
+        return response()->json(['status' => 'acknowledged'], 200);
+    }
+
+    /**
+     * Mandatory Compliance: Shop Redact
+     * 
+     * Shopify sends this webhook 48 hours after a store owner uninstalls your app.
+     */
+    public function shopRedact(Request $request)
+    {
+        $payload = $request->all();
+        Log::info('Shopify Compliance: shop/redact received', $payload);
+
+        // Your logic to delete shop-related data goes here.
+        
+        return response()->json(['status' => 'acknowledged'], 200);
+    }
+    /**
+     * Handle app/uninstalled webhook
+     */
+    public function handleUninstall(Request $request)
+    {
+        $shopDomain = $request->header('X-Shopify-Shop-Domain');
+        Log::info("Shopify Webhook: app/uninstalled received for {$shopDomain}");
+
+        if ($shopDomain) {
+            \App\Models\Shop::where('shop_domain', $shopDomain)->update([
+                'uninstalled_at' => now(),
+                'access_token' => null,
+            ]);
+        }
+        
+        return response()->json(['status' => 'acknowledged'], 200);
+    }
 }

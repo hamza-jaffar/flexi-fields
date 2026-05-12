@@ -54,7 +54,7 @@ class BillingController extends Controller
         }
 
         if (!$shopDomain) {
-            return redirect()->route('app.billing')->withErrors(['error' => 'Store domain not found. Please reload the app.']);
+            return redirect()->back('app.billing')->withErrors(['error' => 'Store domain not found. Please reload the app.']);
         }
 
         session(['shopify_shop' => $shopDomain]);
@@ -64,7 +64,7 @@ class BillingController extends Controller
         $subscription = ShopifyService::createSubscription($shop, $plan);
 
         if (!$subscription) {
-            return redirect()->route('app.billing', ['shop' => $shopDomain])
+            return redirect()->back('app.billing', ['shop' => $shopDomain])
                 ->withErrors(['error' => 'Failed to initiate subscription with Shopify. Check logs for details.']);
         }
 
@@ -90,7 +90,7 @@ class BillingController extends Controller
         ]);
 
         if (!$shopDomain || !$planId) {
-            return redirect()->route('app.billing')->withErrors(['error' => 'Callback parameters missing.']);
+            return redirect()->back('app.billing')->withErrors(['error' => 'Callback parameters missing.']);
         }
 
         $shop = Shop::where('shop_domain', $shopDomain)->firstOrFail();
@@ -109,7 +109,7 @@ class BillingController extends Controller
                 'shop' => $shopDomain,
                 'status' => $shopifySubscription['status'] ?? 'null'
             ]);
-            return redirect()->route('app.billing', ['shop' => $shopDomain]);
+            return redirect()->back('app.billing', ['shop' => $shopDomain]);
         }
 
         Log::info('Proceeding to save subscription to database', [
