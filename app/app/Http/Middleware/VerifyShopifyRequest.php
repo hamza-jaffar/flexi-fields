@@ -38,6 +38,8 @@ class VerifyShopifyRequest
             ], 400);
         }
 
+
+
         // 4. Verify the shop exists in our database
         $shop = Shop::where('shop_domain', $shopDomain)->first();
 
@@ -48,7 +50,19 @@ class VerifyShopifyRequest
 
         $request->merge(['shop_instance' => $shop]);
 
-        return $next($request);
+        $response = $next($request);
+
+        if ($shopDomain) {
+            // 1. Remove the header that strictly blocks iframing
+            $response->headers->remove('X-Frame-Options');
+
+            // 2. Set Content-Security-Policy to allow Shopify to embed your app
+            // We whitelist both the new admin domain and the specific shop domain
+            $csp = "frame-ancestors https://admin.shopify.com https://{$shopDomain}";
+            $response->headers->set('Content-Security-Policy', $csp);
+        }
+
+        return $response;
     }
 
     /**
