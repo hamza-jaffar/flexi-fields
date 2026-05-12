@@ -52,13 +52,16 @@ class VerifyShopifyRequest
 
         $response = $next($request);
 
+        // Security headers for Shopify iframe compatibility
         if ($shopDomain) {
-            // 1. Remove the header that strictly blocks iframing
+            // 1. Remove X-Frame-Options to allow iframing
             $response->headers->remove('X-Frame-Options');
+            if (function_exists('header_remove')) {
+                header_remove('X-Frame-Options');
+            }
 
-            // 2. Set Content-Security-Policy to allow Shopify to embed your app
-            // We whitelist both the new admin domain and the specific shop domain
-            $csp = "frame-ancestors https://admin.shopify.com https://{$shopDomain}";
+            // 2. Set Content-Security-Policy with frame-ancestors
+            $csp = "frame-ancestors https://admin.shopify.com https://*.myshopify.com https://{$shopDomain};";
             $response->headers->set('Content-Security-Policy', $csp);
         }
 
