@@ -36,8 +36,9 @@ class BillingController extends Controller
             'current_shop' => [
                 'name' => $shop->name ?? 'Store',
                 'credits' => $shop->credits ?? 0,
+                'domain' => $shopDomain,
                 'subscription' => $shop->subscription()->with('plan')->first(),
-            ]
+            ],
         ]);
     }
 
@@ -46,11 +47,17 @@ class BillingController extends Controller
      */
     public function subscribe(Request $request, Plan $plan)
     {
-        $shopDomain = $request->get('shop') ?? session('shopify_shop');
+        $shopDomain = $request->query('shop') ?? session('shopify_shop');
+
+        if ($shopDomain) {
+            session(['shopify_shop' => $shopDomain]);
+        }
 
         if (!$shopDomain) {
             return redirect()->route('app.billing')->withErrors(['error' => 'Store domain not found. Please reload the app.']);
         }
+
+        session(['shopify_shop' => $shopDomain]);
 
         $shop = Shop::where('shop_domain', $shopDomain)->firstOrFail();
 
@@ -61,8 +68,10 @@ class BillingController extends Controller
                 ->withErrors(['error' => 'Failed to initiate subscription with Shopify. Check logs for details.']);
         }
 
-        // Redirect to Shopify confirmation URL
-        return redirect()->away($subscription['confirmationUrl']);
+        // Use the redirect view to burst out of the frame properly
+        return Inertia::render('frontend/redirect', [
+            'authUrl' => $subscription['confirmationUrl']
+        ]);
     }
 
     /**
@@ -126,6 +135,9 @@ class BillingController extends Controller
             ]
         );
 
-        return redirect()->route('app.billing', ['shop' => $shopDomain]);
+        session(['shopify_shop' => $shopDomain]);
+
+        $apiKey = config('shopify.api_key');
+        return redirect("https://{$shopDomain}/admin/apps/{$apiKey}/app/billing");
     }
 }

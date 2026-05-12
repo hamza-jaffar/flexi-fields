@@ -32,8 +32,6 @@ class ShopifyHeaders
         $csp = "frame-ancestors " . implode(' ', $ancestors) . ";";
         $response->headers->set('Content-Security-Policy', $csp);
 
-        // Remove X-Frame-Options completely. 
-        // We do this via the response object AND the PHP global header list.
         $response->headers->remove('X-Frame-Options');
         
         if (function_exists('header_remove')) {

@@ -26,6 +26,7 @@ import {
 } from '@shopify/polaris-icons';
 import { Head, Link } from '@inertiajs/react';
 import app from '@/routes/app';
+import { progessBarTone } from '@/lib/utils';
 
 interface Props {
     shop: any;
@@ -33,6 +34,8 @@ interface Props {
         limit: number;
         current: number;
         active: number;
+        storage_limit_mb: number;
+        storage_used_bytes: number;
     };
     recentFields: any[];
 }
@@ -108,13 +111,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     </InlineStack>
                                     <ProgressBar
                                         progress={usagePercentage}
-                                        tone={
-                                            usagePercentage > 90
-                                                ? 'critical'
-                                                : usagePercentage > 70
-                                                  ? 'warning'
-                                                  : 'success'
-                                        }
+                                        tone={progessBarTone(usagePercentage)}
                                     />
                                 </BlockStack>
                             </BlockStack>

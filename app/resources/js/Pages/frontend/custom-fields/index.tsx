@@ -398,7 +398,7 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                                     {shop.subscription?.plan?.name ||
                                         'Free Plan'}
                                 </Text>
-                                <Box marginBlockStart="200">
+                                <Box >
                                     <Button
                                         variant="plain"
                                         onClick={() =>

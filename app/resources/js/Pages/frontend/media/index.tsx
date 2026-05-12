@@ -26,6 +26,7 @@ import {
 import { Head, router, usePage } from '@inertiajs/react';
 import app from '@/routes/app';
 import { useState } from 'react';
+import { progessBarTone } from '@/lib/utils';
 
 interface MediaItem {
     id: number;
@@ -220,13 +221,7 @@ const MediaIndex = ({ media, stats }: Props) => {
                                 </InlineStack>
                                 <ProgressBar
                                     progress={stats.percentage}
-                                    tone={
-                                        stats.percentage > 90
-                                            ? 'critical'
-                                            : stats.percentage > 70
-                                              ? 'warning'
-                                              : 'success'
-                                    }
+                                    tone={progessBarTone(stats.percentage)}
                                 />
                                 {stats.percentage > 90 && (
                                     <InlineStack gap="100" blockAlign="center">

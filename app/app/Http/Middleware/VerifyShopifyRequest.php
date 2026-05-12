@@ -53,10 +53,6 @@ class VerifyShopifyRequest
 
         $response = $next($request);
 
-        Log::info($response);
-
-// --- SECURITY HEADERS FOR IFRAME COMPATIBILITY ---
-        
         // Ensure we are working with a proper Response object
         if ($response instanceof Response) {
             // 1. Force remove X-Frame-Options 

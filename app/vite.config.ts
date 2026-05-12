@@ -28,4 +28,10 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    server: {
+        allowedHosts: [
+            'flexi-fields.degvora.com'
+        ],
+        cors: true,
+    },
 });

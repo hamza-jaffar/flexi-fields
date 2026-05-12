@@ -10,3 +10,9 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }
+
+export const progessBarTone = (percentage: number) => {
+    if (percentage > 90) return 'critical';
+    if (percentage > 70) return 'highlight';
+    return 'success';
+}
