@@ -6,6 +6,7 @@ use App\Models\Shop;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class VerifyShopifyRequest
 {
@@ -52,17 +53,23 @@ class VerifyShopifyRequest
 
         $response = $next($request);
 
-        // Security headers for Shopify iframe compatibility
-        if ($shopDomain) {
-            // 1. Remove X-Frame-Options to allow iframing
-            $response->headers->remove('X-Frame-Options');
-            if (function_exists('header_remove')) {
-                header_remove('X-Frame-Options');
-            }
+        Log::info($response);
 
-            // 2. Set Content-Security-Policy with frame-ancestors
+// --- SECURITY HEADERS FOR IFRAME COMPATIBILITY ---
+        
+        // Ensure we are working with a proper Response object
+        if ($response instanceof Response) {
+            // 1. Force remove X-Frame-Options 
+            // We use set() to override any 'SAMEORIGIN' defaults set by Nginx or Laravel
+            $response->headers->remove('X-Frame-Options');
+            
+            // 2. Build a robust CSP
+            // Shopify apps now require admin.shopify.com AND the specific myshopify domain
             $csp = "frame-ancestors https://admin.shopify.com https://*.myshopify.com https://{$shopDomain};";
             $response->headers->set('Content-Security-Policy', $csp);
+            
+            // 3. Double-check: Some servers re-add headers if they aren't explicitly nullified
+            $response->headers->set('X-Frame-Options', 'ALLOWALL'); 
         }
 
         return $response;

@@ -18,9 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(\App\Http\Middleware\Cors::class);
 
+        // REMOVE the default Laravel FrameGuard
+        $middleware->removeFromGroup('web', \Illuminate\Http\Middleware\FrameGuard::class);
+
         $middleware->validateCsrfTokens(except: [
             'webhooks/*',
-            'api/*', // Also exclude API from CSRF if they are not already
+            'api/*',
         ]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);

@@ -19,6 +19,10 @@ class ShopifyHeaders
 
         $shop = $request->query('shop') ?? $request->header('X-Shop-Domain') ?? session('shopify_shop');
 
+        if ($shop) {
+            $shop = str_replace(['https://', 'http://'], '', $shop);
+        }
+
         // Explicitly allow Shopify Admin and the store domain
         $ancestors = ['https://admin.shopify.com', 'https://*.myshopify.com'];
         if ($shop) {
