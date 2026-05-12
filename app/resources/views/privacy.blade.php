@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy | Flexi Fields</title>
+    <link rel="icon" href="/logo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="/logo.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased font-sans">
