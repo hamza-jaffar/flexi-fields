@@ -8,7 +8,12 @@ use Illuminate\Support\Facades\Route;
 Route::group([], function () {
     Route::get('/', [AuthController::class, 'index'])->name('home');
 
+    Route::get('/privacy-policy', function () {
+        return view('privacy');
+    });
+
     Route::prefix('webhooks')->middleware('shopify.webhook')->group(function () {
+        Route::post('/', function () { return response('OK', 200); });
         Route::post('app/uninstalled', [WebhookController::class, 'handleUninstall']);
         Route::post('customers/data_request', [WebhookController::class, 'customersDataRequest']);
         Route::post('customers/redact', [WebhookController::class, 'customersRedact']);
@@ -18,6 +23,7 @@ Route::group([], function () {
     Route::get('auth', [AuthController::class, 'auth'])->name('auth');
     Route::get('auth/callback', [AuthController::class, 'callback'])->name('auth.callback');
 });
+
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/frontend.php';
