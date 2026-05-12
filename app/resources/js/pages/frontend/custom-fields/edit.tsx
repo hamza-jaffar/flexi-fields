@@ -24,7 +24,6 @@ import customFieldRoutes from '@/routes/app/custom-field';
 import { Switch } from '@/components/ui/switch'; // For preview
 import { DeleteIcon, PlusIcon } from '@shopify/polaris-icons';
 import Editor from 'react-simple-code-editor';
-import { highlight, languages } from 'prismjs';
 import 'prismjs/components/prism-css';
 import 'prismjs/themes/prism.css';
 import CustomFieldPreview from '@/components/CustomFieldPreview';
@@ -610,9 +609,9 @@ const EditCustomFieldPage = ({ shop, customField, allFields }: Props) => {
                                                         })
                                                     }
                                                     highlight={(code: string) =>
-                                                        highlight(
+                                                        (window as any).Prism.highlight(
                                                             code,
-                                                            languages.css,
+                                                            (window as any).Prism.languages.css,
                                                             'css',
                                                         )
                                                     }

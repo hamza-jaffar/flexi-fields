@@ -39,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'shopify.header' => ShopifyHeaders::class,
             'shopify.verify' => VerifyShopifyRequest::class,
             'shopify.webhook' => \App\Http\Middleware\VerifyShopifyWebhook::class,
+            'shopify.session' => \App\Http\Middleware\VerifyShopifySessionToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
