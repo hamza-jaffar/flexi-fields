@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="shopify-api-key" content="{{ config('shopify.api_key') }}" />
-        <script src="https://cdn.shopify.com/shopifycloud/app-bridge/latest/app-bridge.umd.js"></script>
+        <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+        <!-- <script src="https://cdn.shopify.com/shopifycloud/app-bridge/latest/app-bridge.umd.js"></script> -->
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

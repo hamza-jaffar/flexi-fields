@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppProvider, Frame } from '@shopify/polaris';
 import { NavMenu } from '@shopify/app-bridge-react';
 import enTranslations from '@shopify/polaris/locales/en.json';
