@@ -7,13 +7,15 @@ import {
     BlockStack,
     InlineStack,
     Button,
+    Badge,
     Box,
     Icon,
+    Divider,
     ButtonGroup,
 } from '@shopify/polaris';
-import { CheckIcon, MinusIcon } from '@shopify/polaris-icons';
-import { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { CheckIcon, StarFilledIcon, MinusIcon } from '@shopify/polaris-icons';
+import React, { useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
 import app from '@/routes/app';
 
 interface Plan {
@@ -33,7 +35,6 @@ interface Plan {
 interface CurrentShop {
     name: string;
     credits: number;
-    domain: string;
     subscription: {
         id: number;
         status: string;
@@ -47,8 +48,8 @@ interface Props {
 }
 
 const Billing = ({ plans, current_shop }: Props) => {
+    const { shopify } = usePage().props as any;
     const [isYearly, setIsYearly] = useState(false);
-    const shop = current_shop?.domain;
 
     const hasYearlyPlans = plans.some(
         (p) => p.billing_interval === 'EVERY_12_MONTHS',
@@ -63,7 +64,9 @@ const Billing = ({ plans, current_shop }: Props) => {
         : plans;
 
     const handleSelectPlan = (planId: number) => {
-        router.visit(app.billing.subscribe(planId, { query: { shop } }).url);
+        const shop = shopify?.shop || new URLSearchParams(window.location.search).get('shop');
+        const url = app.billing.subscribe({ plan: planId, shop } as any).url;
+        window.open(url, '_top');
     };
 
     // Features to compare
@@ -94,7 +97,7 @@ const Billing = ({ plans, current_shop }: Props) => {
                     <Box paddingBlockStart="800" paddingBlockEnd="400">
                         <BlockStack gap="400" inlineAlign="center">
                             <Text variant="heading3xl" as="h1" fontWeight="bold" alignment="center">
-                                Choose the plan that's right for yousf
+                                Choose the plan that's right for you
                             </Text>
                             <Text as="p" variant="bodyLg" tone="subdued" alignment="center">
                                 All paid plans include a 7-day free trial. Scale as you grow.
@@ -151,7 +154,7 @@ const Billing = ({ plans, current_shop }: Props) => {
                                             {comparisonFeatures.map((feature, idx) => (
                                                 <tr key={idx} style={{ borderTop: '1px solid #edeeef' }}>
                                                     <td style={{ padding: '16px 24px' }}>
-                                                        <Text as="p" variant="bodyMd" fontWeight="medium">{feature.label}</Text>
+                                                        <Text variant="bodyMd" fontWeight="medium">{feature.label}</Text>
                                                     </td>
                                                     {displayPlans.map((plan) => {
                                                         const val = getFeatureValue(plan, feature.keys[0]);
@@ -164,7 +167,7 @@ const Billing = ({ plans, current_shop }: Props) => {
                                                                         <Icon source={MinusIcon} tone="subdued" />
                                                                     )
                                                                 ) : (
-                                                                    <Text as="p" variant="bodyMd" fontWeight="bold">
+                                                                    <Text variant="bodyMd" fontWeight="bold">
                                                                         {val === -1 ? 'Unlimited' : 
                                                                          feature.keys.includes('storage_limit_mb') ? 
                                                                          (val >= 1000 ? `${val/1000}GB` : `${val}MB`) : 
@@ -188,15 +191,15 @@ const Billing = ({ plans, current_shop }: Props) => {
                         <InlineStack gap="600" align="center">
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text as="p" variant="bodySm" tone="subdued">Cancel anytime</Text>
+                                <Text variant="bodySm" tone="subdued">Cancel anytime</Text>
                             </BlockStack>
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text as="p" variant="bodySm" tone="subdued">7-day free trial</Text>
+                                <Text variant="bodySm" tone="subdued">7-day free trial</Text>
                             </BlockStack>
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text as="p" variant="bodySm" tone="subdued">No hidden fees</Text>
+                                <Text variant="bodySm" tone="subdued">No hidden fees</Text>
                             </BlockStack>
                         </InlineStack>
                     </Box>
