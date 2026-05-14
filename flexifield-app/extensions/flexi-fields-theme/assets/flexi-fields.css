@@ -1,6 +1,7 @@
 #flexi-fields-container {
     margin: 1.5rem 0;
     font-family: inherit;
+    max-width: 44rem;
 }
 
 .flexi-field-wrapper {
@@ -51,6 +52,8 @@ input[type="file"].flexi-field-input {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .flexi-field-file-dropzone:hover {
