@@ -61,6 +61,16 @@ class BillingController extends Controller
 
         $shop = Shop::where('shop_domain', $shopDomain)->firstOrFail();
 
+        // Check if merchant already has an active subscription
+        $activeSubscription = ShopifyService::getActiveSubscription($shop);
+        if ($activeSubscription && $activeSubscription['status'] === 'ACTIVE') {
+            Log::info('Merchant already has active subscription, updating existing subscription', [
+                'shop' => $shopDomain,
+                'current_plan' => $activeSubscription['name'] ?? 'Unknown',
+                'new_plan' => $plan->name,
+            ]);
+        }
+
         $subscription = ShopifyService::createSubscription($shop, $plan);
 
         if (!$subscription) {
@@ -104,12 +114,22 @@ class BillingController extends Controller
             'shopify_subscription' => $shopifySubscription
         ]);
 
-        if (!$shopifySubscription || $shopifySubscription['status'] !== 'ACTIVE') {
-            Log::warning('Subscription verification failed', [
+        if (!$shopifySubscription) {
+            Log::warning('Subscription not found - merchant may have declined the charge', [
+                'shop' => $shopDomain,
+            ]);
+            return redirect("https://{$shopDomain}/admin/apps/" . config('shopify.api_key') . "/app/billing")
+                ->with('error', 'Subscription was not activated. Please try again or contact support.');
+        }
+
+        // Handle declined charge
+        if ($shopifySubscription['status'] !== 'ACTIVE') {
+            Log::warning('Subscription verification failed - charge may have been declined', [
                 'shop' => $shopDomain,
                 'status' => $shopifySubscription['status'] ?? 'null'
             ]);
-            return redirect()->back('app.billing', ['shop' => $shopDomain]);
+            return redirect("https://{$shopDomain}/admin/apps/" . config('shopify.api_key') . "/app/billing")
+                ->with('error', 'Subscription was declined or could not be activated. Please try again.');
         }
 
         Log::info('Proceeding to save subscription to database', [
@@ -138,6 +158,7 @@ class BillingController extends Controller
         session(['shopify_shop' => $shopDomain]);
 
         $apiKey = config('shopify.api_key');
-        return redirect("https://{$shopDomain}/admin/apps/{$apiKey}/app/billing");
+        return redirect("https://{$shopDomain}/admin/apps/{$apiKey}/app/billing")
+            ->with('success', 'Subscription activated successfully!');
     }
 }

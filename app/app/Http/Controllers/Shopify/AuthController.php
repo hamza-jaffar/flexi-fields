@@ -35,6 +35,13 @@ class AuthController extends Controller
             ], 400);
         }
 
+        // Security: Validate shop domain format
+        if (!$this->isValidShopDomain($shopDomain)) {
+            return response()->json([
+                'error' => 'Invalid shop domain format.',
+            ], 400);
+        }
+
         try {
             // Retrieve shop details from the database
             $shop = Shop::where('shop_domain', $shopDomain)->first();
@@ -82,6 +89,11 @@ class AuthController extends Controller
 
         if (!$shop) {
             return response()->json(['error' => 'Missing shop parameter.'], 400);
+        }
+
+        // Security: Validate shop domain format
+        if (!$this->isValidShopDomain($shop)) {
+            return response()->json(['error' => 'Invalid shop domain format.'], 400);
         }
 
         try {
@@ -282,5 +294,18 @@ class AuthController extends Controller
         $calculatedHmac = hash_hmac('sha256', $message, config('shopify.api_secret'));
 
         return hash_equals($hmac, $calculatedHmac);
+    }
+
+    /**
+     * Security Helper: Validate Shop Domain Format
+     *
+     * Ensures the shop parameter matches the expected Shopify domain format.
+     * Prevents malformed or external domains from being used.
+     */
+    private function isValidShopDomain(string $shopDomain): bool
+    {
+        // Shop domain must match: subdomain.myshopify.com
+        // Must not contain protocol, paths, or special characters
+        return preg_match('/^[a-z0-9][a-z0-9\-]*\.myshopify\.com$/i', $shopDomain) === 1;
     }
 }

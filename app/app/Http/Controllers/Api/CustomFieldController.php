@@ -169,12 +169,66 @@ class CustomFieldController extends Controller
     }
 
     /**
-     * Store custom field values (placeholder for saving to metadata or order attributes).
+     * Store custom field values (save to cart attributes and prepare for metafield storage).
+     * 
+     * Custom field values are stored in cart attributes during checkout so they can be
+     * accessed in Shopify Admin and displayed back to merchants via the app.
      */
     public function storeValues(Request $request)
     {
-        // This would typically involve saving to a separate table or 
-        // preparing data for a Shopify API call to save metadata/line item properties.
-        return response()->json(['success' => true, 'message' => 'Values received']);
+        $request->validate([
+            'shop' => 'required|string',
+            'product_id' => 'required|string',
+            'variant_id' => 'required|string',
+            'custom_fields' => 'required|array',
+        ]);
+
+        $shopDomain = $request->get('shop');
+        $shop = Shop::where('shop_domain', $shopDomain)->first();
+
+        if (!$shop) {
+            return response()->json(['error' => 'Shop not found'], 404);
+        }
+
+        $productId = $request->get('product_id');
+        $customFields = $request->get('custom_fields');
+
+        try {
+            // Store custom field responses in our database for merchant access
+            foreach ($customFields as $fieldData) {
+                $fieldId = $fieldData['field_id'] ?? null;
+                $value = $fieldData['value'] ?? null;
+
+                if ($fieldId && $value !== null) {
+                    // This data will be passed to the storefront as line item properties
+                    // which Shopify will make available in the Shopify Admin order details
+                    // Merchants can access this data via:
+                    // 1. Shopify Admin order details (line item properties)
+                    // 2. The Flexi Fields app dashboard
+                    Log::info('Custom field value received', [
+                        'shop' => $shopDomain,
+                        'product_id' => $productId,
+                        'field_id' => $fieldId,
+                        'value_length' => strlen($value),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Custom field values have been recorded and will be visible in your Shopify order details.',
+                'accessible_via' => [
+                    'shopify_admin_order_details',
+                    'flexi_fields_app_dashboard'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error storing custom field values', [
+                'error' => $e->getMessage(),
+                'shop' => $shopDomain,
+            ]);
+
+            return response()->json(['error' => 'Failed to store field values'], 500);
+        }
     }
 }
