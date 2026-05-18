@@ -30,16 +30,12 @@ class AuthController extends Controller
 
         // Safety Check: If no shop is provided, the request is invalid/external.
         if (!$shopDomain) {
-            return response()->json([
-                'error' => 'Missing shop parameter. Please launch the app from Shopify.',
-            ], 400);
+            return $this->renderError('Missing shop parameter. Please launch the app from Shopify.', 400);
         }
 
         // Security: Validate shop domain format
         if (!$this->isValidShopDomain($shopDomain)) {
-            return response()->json([
-                'error' => 'Invalid shop domain format.',
-            ], 400);
+            return $this->renderError('Invalid shop domain format.', 400);
         }
 
         try {
@@ -72,9 +68,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             Log::error('Authentication Bridge Error: ' . $e->getMessage());
 
-            return response()->json([
-                'error' => 'Something went wrong while loading the app.',
-            ], 500);
+            return $this->renderError('Something went wrong while loading the app.', 500);
         }
     }
 
@@ -88,12 +82,12 @@ class AuthController extends Controller
         $shop = $request->query('shop');
 
         if (!$shop) {
-            return response()->json(['error' => 'Missing shop parameter.'], 400);
+            return $this->renderError('Missing shop parameter.', 400);
         }
 
         // Security: Validate shop domain format
         if (!$this->isValidShopDomain($shop)) {
-            return response()->json(['error' => 'Invalid shop domain format.'], 400);
+            return $this->renderError('Invalid shop domain format.', 400);
         }
 
         try {
@@ -131,7 +125,7 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             Log::error("OAuth Initiation Failed: " . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return $this->renderError($e->getMessage(), 500);
         }
     }
 
@@ -162,14 +156,14 @@ class AuthController extends Controller
                 'session_nonce' => session('shopify_nonce'),
                 'session_id' => session()->getId()
             ]);
-            return response()->json(['error' => 'Invalid state. Possible CSRF attempt.'], 401);
+            return $this->renderError('Invalid state. Possible CSRF attempt.', 401);
         }
 
         // Security Check 2: Verify the HMAC Signature
         // This ensures the data sent to this route was signed by Shopify and not tampered with.
         if (!$this->verifyHmac($params)) {
             Log::warning('Security Alert: HMAC verification failed.');
-            return response()->json(['error' => 'HMAC verification failed.'], 401);
+            return $this->renderError('HMAC verification failed.', 401);
         }
 
         try {
@@ -186,7 +180,7 @@ class AuthController extends Controller
 
             if ($response->failed()) {
                 Log::error('Shopify Token Exchange Failed', ['body' => $response->body()]);
-                return response()->json(['error' => 'Failed to retrieve access token from Shopify.'], 500);
+                return $this->renderError('Failed to retrieve access token from Shopify.', 500);
             }
 
             $tokenData = $response->json();
@@ -235,7 +229,7 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             Log::error("OAuth Callback Processing Failed: " . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return $this->renderError($e->getMessage(), 500);
         }
     }
 
@@ -307,5 +301,17 @@ class AuthController extends Controller
         // Shop domain must match: subdomain.myshopify.com
         // Must not contain protocol, paths, or special characters
         return preg_match('/^[a-z0-9][a-z0-9\-]*\.myshopify\.com$/i', $shopDomain) === 1;
+    }
+
+    /**
+     * Helper: Render Error View
+     *
+     * Renders the Inertia error page instead of raw JSON to comply with Shopify review standards.
+     */
+    private function renderError(string $message, int $status = 400)
+    {
+        return Inertia::render('frontend/error', ['message' => $message])
+            ->toResponse(request())
+            ->setStatusCode($status);
     }
 }
