@@ -20,15 +20,6 @@ class VerifyShopifySessionToken
         $sessionShop = session('shopify_shop');
         $shopDomain = $request->query('shop') ?? session('shopify_shop');
 
-        // Diagnostic logging to help trace why shop context is lost during redirects
-        Log::debug('VerifyShopifySessionToken incoming', [
-            'route' => $request->path(),
-            'session_id' => session()->getId(),
-            'query_shop' => $queryShop,
-            'session_shop' => $sessionShop,
-            'has_authorization' => $header ? true : false,
-        ]);
-
         if ($header && str_starts_with($header, 'Bearer ')) {
             $token = str_replace('Bearer ', '', $header);
             return $this->verifyToken($request, $next, $token);

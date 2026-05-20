@@ -138,12 +138,13 @@ class BillingController extends Controller
             'plan_id' => $plan->id
         ]);
 
-        // Update or create local subscription
-        Subscription::updateOrCreate(
-            ['charge_id' => $chargeId],
+        // Update or create local subscription using shop_id as the unique identifier.
+        // This ensures upgrades/downgrades update the existing subscription instead of creating a new one.
+        $subscription = Subscription::updateOrCreate(
+            ['shop_id' => $shop->id],
             [
-                'shop_id' => $shop->id,
                 'plan_id' => $plan->id,
+                'charge_id' => $chargeId,
                 'status' => 'ACTIVE',
                 'name' => $plan->name,
                 'price' => (float) ($plan->discounted_price ?? $plan->price),
@@ -154,6 +155,13 @@ class BillingController extends Controller
                 'test' => $shopifySubscription['test'] ?? true,
             ]
         );
+
+        Log::info('Subscription saved/updated successfully', [
+            'shop' => $shopDomain,
+            'subscription_id' => $subscription->id,
+            'plan_id' => $plan->id,
+            'was_updated' => !$subscription->wasRecentlyCreated,
+        ]);
 
         session(['shopify_shop' => $shopDomain]);
 
