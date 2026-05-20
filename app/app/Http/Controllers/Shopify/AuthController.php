@@ -223,9 +223,13 @@ class AuthController extends Controller
             // Clean up session security data
             session()->forget('shopify_nonce');
 
-            // Success: Redirect to the Shopify Admin (loads your app inside the iFrame)
+            // Success: Break out of iframe and redirect to the Shopify Admin
             $apiKey = config('shopify.api_key');
-            return redirect("https://{$shop}/admin/apps/{$apiKey}");
+            $adminUrl = "https://admin.shopify.com/store/" . explode('.', $shop)[0] . "/apps/{$apiKey}";
+            
+            return Inertia::render('frontend/redirect', [
+                'authUrl' => $adminUrl
+            ]);
 
         } catch (\Exception $e) {
             Log::error("OAuth Callback Processing Failed: " . $e->getMessage());

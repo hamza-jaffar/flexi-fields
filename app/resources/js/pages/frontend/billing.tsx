@@ -63,11 +63,34 @@ const Billing = ({ plans, current_shop }: Props) => {
         ? plans.filter((p) => isYearly ? p.billing_interval === 'EVERY_12_MONTHS' : p.billing_interval === 'EVERY_30_DAYS')
         : plans;
 
-    const handleSelectPlan = (planId: number) => {
-        const shop = shopify?.shop || new URLSearchParams(window.location.search).get('shop');
-        const url = app.billing.subscribe({ plan: planId, shop } as any).url;
+const handleSelectPlan = async (planId: number) => {
+    // 1. Fallback stack: Try App Bridge config, then current URL, then global window layout variables
+    const shop = window.shopify?.config?.shop 
+        || new URLSearchParams(window.location.search).get('shop') 
+        || (window as any).shopDomain;
+
+    if (!shop) {
+        alert("Error: Could not detect your Shopify shop domain. Please refresh the page.");
+        return;
+    }
+
+    // 2. Generate the base subscription URL from your helper
+    let url = app.billing.subscribe({ plan: planId } as any).url;
+
+    // 3. Explicitly attach the shop parameter to the end of the redirect string
+    if (url.includes('?')) {
+        url = `${url}&shop=${shop}`;
+    } else {
+        url = `${url}?shop=${shop}`;
+    }
+
+    // 4. Redirect the top-level parent window out of the iframe
+    if (window.top) {
+        window.top.location.href = url;
+    } else {
         window.open(url, '_top');
-    };
+    }
+};
 
     // Features to compare
     const comparisonFeatures = [

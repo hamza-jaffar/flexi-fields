@@ -24,20 +24,78 @@ class ShopifyService
         }
 
         $response = Http::withHeaders([
-            'X-Shopify-Access-Token' => $shop->access_token,
-            'Content-Type' => 'application/json',
+          'X-Shopify-Access-Token' => $shop->access_token,
+          'Content-Type' => 'application/json',
         ])->post($url, $payload);
 
+        // If we received an unauthorized error, attempt to refresh the access token
         if ($response->failed()) {
-            Log::error("Shopify GraphQL Error for {$shop->shop_domain}", [
-                'body' => $response->body(),
-                'query' => $query,
-            ]);
-            return null;
+          $body = $response->body();
+          Log::error("Shopify GraphQL Error for {$shop->shop_domain}", [
+            'body' => $body,
+            'query' => $query,
+          ]);
+
+          // Detect invalid token error and try refresh once
+          if ($response->status() === 401 || str_contains($body, 'Invalid API key') || str_contains($body, 'invalid access token')) {
+            Log::info("Attempting access token refresh for {$shop->shop_domain}");
+            if (self::refreshAccessToken($shop)) {
+              // Retry the request with new token
+              $response = Http::withHeaders([
+                'X-Shopify-Access-Token' => $shop->access_token,
+                'Content-Type' => 'application/json',
+              ])->post($url, $payload);
+
+              if ($response->successful()) {
+                return $response->json();
+              }
+            }
+          }
+
+          return null;
         }
 
         return $response->json();
     }
+
+      /**
+       * Refresh an expired access token using the stored refresh token.
+       * Returns true on success and updates the Shop record.
+       */
+      private static function refreshAccessToken(Shop $shop): bool
+      {
+        try {
+          $url = "https://{$shop->shop_domain}/admin/oauth/access_token";
+          $response = Http::asForm()->post($url, [
+            'client_id' => config('shopify.api_key'),
+            'client_secret' => config('shopify.api_secret'),
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $shop->refresh_token,
+          ]);
+
+          if ($response->successful()) {
+            $data = $response->json();
+            if (!empty($data['access_token'])) {
+              $shop->access_token = $data['access_token'];
+              if (!empty($data['refresh_token'])) {
+                $shop->refresh_token = $data['refresh_token'];
+              }
+              if (!empty($data['expires_in'])) {
+                $shop->access_token_expires_at = now()->addSeconds($data['expires_in']);
+              }
+              $shop->save();
+              Log::info("Refreshed access token for {$shop->shop_domain}");
+              return true;
+            }
+          }
+
+          Log::warning("Failed to refresh access token for {$shop->shop_domain}", ['response' => $response->body()]);
+        } catch (\Exception $e) {
+          Log::error('Exception refreshing access token', ['shop' => $shop->shop_domain, 'error' => $e->getMessage()]);
+        }
+
+        return false;
+      }
 
     /**
      * Create a new app subscription for a shop.

@@ -33,7 +33,7 @@ Route::prefix("app")->middleware(['shopify.session'])->name('app.')->group(funct
 });
 
 // Separate group for billing redirects to avoid middleware hijacking
-Route::prefix("app/billing")->name('app.billing.')->group(function () {
+Route::prefix("app/billing")->middleware(['shopify.session'])->name('app.billing.')->group(function () {
     Route::get('/subscribe/{plan}', [BillingController::class, 'subscribe'])->name('subscribe');
     Route::get('/callback', [BillingController::class, 'callback'])->name('callback');
 });
