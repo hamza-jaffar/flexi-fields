@@ -75,14 +75,14 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                     </Box>
 
                     {/* Stats Grid */}
-                    <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="400">
+                    <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
                         <Card>
                             <BlockStack gap="400">
                                 <InlineStack gap="200" blockAlign="center">
                                     <Box background="bg-surface-secondary" padding="100" borderRadius="150">
                                         <Icon source={AppsIcon} tone="subdued" />
                                     </Box>
-                                    <Text variant="headingMd" as="h3">
+                                    <Text variant="headingSm" as="h3">
                                         Fields Usage
                                     </Text>
                                 </InlineStack>
@@ -126,7 +126,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     <Box background="bg-surface-info" padding="100" borderRadius="150">
                                         <Icon source={ArchiveIcon} tone="info" />
                                     </Box>
-                                    <Text variant="headingMd" as="h3">
+                                    <Text variant="headingSm" as="h3">
                                         Storage
                                     </Text>
                                 </InlineStack>
@@ -154,48 +154,17 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                         <Card>
                             <BlockStack gap="400">
                                 <InlineStack gap="200" blockAlign="center">
-                                    <Box background="bg-surface-success" padding="100" borderRadius="150">
-                                        <Icon source={CheckCircleIcon} tone="success" />
-                                    </Box>
-                                    <Text variant="headingMd" as="h3">
-                                        Active Status
-                                    </Text>
-                                </InlineStack>
-                                <BlockStack gap="200">
-                                    <Text
-                                        variant="heading2xl"
-                                        as="p"
-                                        fontWeight="bold"
-                                    >
-                                        {stats.active}
-                                    </Text>
-                                    <Text
-                                        as="p"
-                                        variant="bodyMd"
-                                        tone="subdued"
-                                    >
-                                        Currently active fields
-                                    </Text>
-                                </BlockStack>
-                            </BlockStack>
-                        </Card>
-
-                        <Card>
-                            <BlockStack gap="400">
-                                <InlineStack gap="200" blockAlign="center">
                                     <Box background="bg-surface-secondary" padding="100" borderRadius="150">
                                         <Icon source={CreditCardIcon} tone="subdued" />
                                     </Box>
-                                    <Text variant="headingMd" as="h3">
+                                    <Text variant="headingSm" as="h3">
                                         Plan
                                     </Text>
                                 </InlineStack>
                                 <BlockStack gap="200">
                                     <InlineStack gap="200" blockAlign="center">
                                         <Text
-                                            variant="heading2xl"
-                                            as="p"
-                                            fontWeight="bold"
+                                            variant="headingLg" as="h2"
                                         >
                                             {planName}
                                         </Text>
