@@ -146,13 +146,13 @@ const handleSelectPlan = async (planId: number) => {
                                         <thead>
                                             <tr>
                                                 <th style={{ padding: '24px', textAlign: 'left', minWidth: '200px' }}>
-                                                    <Text variant="headingMd" as="h3">Compare Plans</Text>
+                                                    <Text variant="headingMd" as="h4">Compare Plans</Text>
                                                 </th>
                                                 {displayPlans.map((plan) => (
                                                     <th key={plan.id} style={{ padding: '24px', textAlign: 'center', minWidth: '150px', background: plan.handle === 'pro' ? '#f8f9ff' : 'transparent' }}>
                                                         <BlockStack gap="200">
-                                                            <Text variant="headingMd" as="h4" fontWeight="bold">{plan.name}</Text>
-                                                            <Text variant="headingLg" as="p" fontWeight="bold">
+                                                            <Text variant="headingMd" as="h6" fontWeight="bold">{plan.name}</Text>
+                                                            <Text variant="headingLg" as="p" fontWeight="semibold">
                                                                 {parseFloat(plan.price) === 0 ? 'Free' : `$${plan.price}`}
                                                             </Text>
                                                             <div style={{ marginTop: '12px' }}>
@@ -177,7 +177,7 @@ const handleSelectPlan = async (planId: number) => {
                                             {comparisonFeatures.map((feature, idx) => (
                                                 <tr key={idx} style={{ borderTop: '1px solid #edeeef' }}>
                                                     <td style={{ padding: '16px 24px' }}>
-                                                        <Text variant="bodyMd" fontWeight="medium">{feature.label}</Text>
+                                                        <Text as='p' variant="bodyMd" fontWeight="medium">{feature.label}</Text>
                                                     </td>
                                                     {displayPlans.map((plan) => {
                                                         const val = getFeatureValue(plan, feature.keys[0]);
@@ -190,7 +190,7 @@ const handleSelectPlan = async (planId: number) => {
                                                                         <Icon source={MinusIcon} tone="subdued" />
                                                                     )
                                                                 ) : (
-                                                                    <Text variant="bodyMd" fontWeight="bold">
+                                                                    <Text as='p' variant="bodyMd" fontWeight="bold">
                                                                         {val === -1 ? 'Unlimited' : 
                                                                          feature.keys.includes('storage_limit_mb') ? 
                                                                          (val >= 1000 ? `${val/1000}GB` : `${val}MB`) : 
@@ -214,15 +214,15 @@ const handleSelectPlan = async (planId: number) => {
                         <InlineStack gap="600" align="center">
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text variant="bodySm" tone="subdued">Cancel anytime</Text>
+                                <Text as='p' variant="bodySm" tone="subdued">Cancel anytime</Text>
                             </BlockStack>
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text variant="bodySm" tone="subdued">7-day free trial</Text>
+                                <Text as='p' variant="bodySm" tone="subdued">7-day free trial</Text>
                             </BlockStack>
                             <BlockStack gap="100" inlineAlign="center">
                                 <Icon source={CheckIcon} tone="success" />
-                                <Text variant="bodySm" tone="subdued">No hidden fees</Text>
+                                <Text as='p' variant="bodySm" tone="subdued">No hidden fees</Text>
                             </BlockStack>
                         </InlineStack>
                     </Box>

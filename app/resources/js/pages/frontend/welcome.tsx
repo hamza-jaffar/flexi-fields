@@ -31,6 +31,8 @@ interface Props {
     shop: any;
     stats: {
         limit: number;
+        storage_used_bytes: number;
+        storage_limit_mb: number;
         current: number;
         active: number;
     };
@@ -52,9 +54,9 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                         <InlineStack align="space-between" blockAlign="center">
                             <BlockStack gap="100">
                                 <Text
-                                    variant="heading2xl"
-                                    as="h1"
-                                    fontWeight="bold"
+                                    variant="headingXl"
+                                    as="h4"
+                                    fontWeight="semibold"
                                 >
                                     Welcome back, {shop.name}
                                 </Text>
