@@ -159,6 +159,7 @@ const MediaIndex = ({ media, stats }: Props) => {
         <ShopifyLayout>
             <Head title="Media Library" />
             <Page
+            fullWidth
                 title="Media Library"
                 subtitle="View and manage all files uploaded by your customers."
                 primaryAction={

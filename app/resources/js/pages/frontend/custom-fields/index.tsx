@@ -314,7 +314,7 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                                         />
                                     </div>
                                 </InlineStack>
-                                <Text variant="headingXl" as="h2">
+                                <Text variant="headingXl" as="h2" fontWeight='medium'>
                                     {fieldStats.current}
                                 </Text>
                                 <Text variant="bodySm" tone="subdued" as="p">
@@ -351,7 +351,7 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                                     align="start"
                                     blockAlign="baseline"
                                 >
-                                    <Text variant="headingXl" as="h2">
+                                    <Text variant="headingXl" as="h2" fontWeight='medium'>
                                         {fieldStats.current}
                                     </Text>
                                     <Text
@@ -394,11 +394,11 @@ const CustomFieldsIndex = ({ customFields, shop, fieldStats }: Props) => {
                                         <Icon source={PlanIcon} tone="info" />
                                     </div>
                                 </InlineStack>
-                                <Text variant="headingLg" as="h2">
+                                <Text variant="headingLg" as="h2" fontWeight='medium'>
                                     {shop.subscription?.plan?.name ||
                                         'Free Plan'}
                                 </Text>
-                                <Box marginBlockStart="200">
+                                <Box>
                                     <Button
                                         variant="plain"
                                         onClick={() =>

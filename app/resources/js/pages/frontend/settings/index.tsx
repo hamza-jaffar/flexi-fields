@@ -44,8 +44,8 @@ export default function SettingsPage({ settings }: SettingsProps) {
         <ShopifyLayout>
             <Page
                 title="Settings"
+                fullWidth
                 subtitle="Customize how Flexi Fields appears on your storefront"
-                backAction={{ content: 'Dashboard', url: app.index.url() }}
             >
                 <Layout>
                     <Layout.Section>

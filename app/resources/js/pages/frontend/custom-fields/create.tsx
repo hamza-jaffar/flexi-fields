@@ -167,13 +167,6 @@ const CreateCustomFieldPage = ({ shop, allFields }: Props) => {
         <ShopifyLayout>
             <Head title="Create Custom Field" />
             <Page
-                breadcrumbs={[
-                    {
-                        content: 'Custom Fields',
-                        onAction: () =>
-                            router.visit(customFieldRoutes.index().url),
-                    },
-                ]}
                 title="Create Custom Field"
                 primaryAction={{
                     content: 'Save Field',

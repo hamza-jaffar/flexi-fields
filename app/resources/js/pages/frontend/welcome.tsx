@@ -56,7 +56,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                 <Text
                                     variant="headingXl"
                                     as="h4"
-                                    fontWeight="semibold"
+                                    fontWeight="medium"
                                 >
                                     Welcome back, {shop.name}
                                 </Text>
@@ -84,7 +84,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     <Box background="bg-surface-secondary" padding="100" borderRadius="150">
                                         <Icon source={AppsIcon} tone="subdued" />
                                     </Box>
-                                    <Text variant="headingSm" as="h3">
+                                    <Text variant="headingSm" as="h3" fontWeight='medium'>
                                         Fields Usage
                                     </Text>
                                 </InlineStack>
@@ -100,7 +100,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                         <Text
                                             as="p"
                                             variant="bodyMd"
-                                            fontWeight="bold"
+                                            fontWeight="regular"
                                         >
                                             {stats.current} /{' '}
                                             {stats.limit === -1
@@ -110,13 +110,13 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     </InlineStack>
                                     <ProgressBar
                                         progress={usagePercentage}
-                                        tone={
-                                            usagePercentage > 90
-                                                ? 'critical'
-                                                : usagePercentage > 70
-                                                  ? 'warning'
-                                                  : 'success'
-                                        }
+                                            tone={
+                                                usagePercentage > 90
+                                                    ? 'critical'
+                                                    : usagePercentage > 70
+                                                    ? 'highlight'
+                                                    : 'success'
+                                            }
                                     />
                                 </BlockStack>
                             </BlockStack>
@@ -128,7 +128,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     <Box background="bg-surface-info" padding="100" borderRadius="150">
                                         <Icon source={ArchiveIcon} tone="info" />
                                     </Box>
-                                    <Text variant="headingSm" as="h3">
+                                    <Text variant="headingSm" as="h3"  fontWeight='medium'>
                                         Storage
                                     </Text>
                                 </InlineStack>
@@ -137,7 +137,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                         <Text as="p" variant="bodyMd" tone="subdued">
                                             Usage
                                         </Text>
-                                        <Text as="p" variant="bodyMd" fontWeight="bold">
+                                        <Text as="p" variant="bodyMd" fontWeight="regular" >
                                             {Math.round(stats.storage_used_bytes / (1024 * 1024))} MB / {stats.storage_limit_mb === -1 ? '∞' : stats.storage_limit_mb} MB
                                         </Text>
                                     </InlineStack>
@@ -159,14 +159,14 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     <Box background="bg-surface-secondary" padding="100" borderRadius="150">
                                         <Icon source={CreditCardIcon} tone="subdued" />
                                     </Box>
-                                    <Text variant="headingSm" as="h3">
+                                    <Text variant="headingSm" as="h3"  fontWeight='medium'>
                                         Plan
                                     </Text>
                                 </InlineStack>
                                 <BlockStack gap="200">
                                     <InlineStack gap="200" blockAlign="center">
                                         <Text
-                                            variant="headingLg" as="h2"
+                                            variant="headingLg" as="h2" fontWeight='medium'
                                         >
                                             {planName}
                                         </Text>
@@ -195,7 +195,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     borderColor="border"
                                 >
                                     <InlineStack align="space-between">
-                                        <Text variant="headingMd" as="h3">
+                                        <Text variant="headingMd" as="h3" fontWeight='medium'>
                                             Recent Fields
                                         </Text>
                                         <Link
@@ -343,7 +343,7 @@ const Welcome = ({ shop, stats, recentFields }: Props) => {
                                     borderRadius="200"
                                 >
                                     <BlockStack gap="200">
-                                        <Text variant="headingSm" as="h4">
+                                        <Text variant="headingSm" as="h4" fontWeight='medium'>
                                             Pro Tip
                                         </Text>
                                         <Text

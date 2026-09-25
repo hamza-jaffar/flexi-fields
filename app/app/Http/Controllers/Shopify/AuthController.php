@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shopify;
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -103,6 +104,7 @@ class AuthController extends Controller
             $nonce = bin2hex(random_bytes(16));
             session(['shopify_nonce' => $nonce]);
             session()->save();
+            Cache::put("shopify_oauth_state:{$nonce}", $shop, now()->addMinutes(10));
 
             Log::debug('OAuth Initiation', [
                 'session_id' => session()->getId(),
@@ -150,14 +152,24 @@ class AuthController extends Controller
         ]);
 
         // Security Check 1: Verify the Nonce (State)
-        if (!$state || $state !== session('shopify_nonce')) {
+        $sessionNonce = session('shopify_nonce');
+        $cachedShop = $state ? Cache::get("shopify_oauth_state:{$state}") : null;
+
+        if (!$state || ($state !== $sessionNonce && $cachedShop !== $shop)) {
             Log::warning('Security Alert: Invalid nonce/state detected during callback.', [
                 'request_state' => $state,
                 'session_nonce' => session('shopify_nonce'),
                 'session_id' => session()->getId()
             ]);
+
+            if ($shop && $this->isValidShopDomain($shop)) {
+                return redirect()->route('auth', ['shop' => $shop]);
+            }
+
             return $this->renderError('Invalid state. Possible CSRF attempt.', 401);
         }
+
+        Cache::forget("shopify_oauth_state:{$state}");
 
         // Security Check 2: Verify the HMAC Signature
         // This ensures the data sent to this route was signed by Shopify and not tampered with.

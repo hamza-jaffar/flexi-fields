@@ -7,10 +7,8 @@ import {
     BlockStack,
     InlineStack,
     Button,
-    Badge,
     Box,
     Icon,
-    Divider,
     ButtonGroup,
 } from '@shopify/polaris';
 import { CheckIcon, StarFilledIcon, MinusIcon } from '@shopify/polaris-icons';
@@ -117,23 +115,14 @@ const handleSelectPlan = async (planId: number) => {
             <Page fullWidth>
                 <BlockStack gap="800">
                     {/* Header */}
-                    <Box paddingBlockStart="800" paddingBlockEnd="400">
+                    <Box paddingBlockStart="600" paddingBlockEnd="400">
                         <BlockStack gap="400" inlineAlign="center">
-                            <Text variant="heading3xl" as="h1" fontWeight="bold" alignment="center">
+                            <Text variant="heading2xl" as="h1" fontWeight="medium" alignment="center">
                                 Choose the plan that's right for you
                             </Text>
                             <Text as="p" variant="bodyLg" tone="subdued" alignment="center">
                                 All paid plans include a 7-day free trial. Scale as you grow.
                             </Text>
-
-                            {hasYearlyPlans && (
-                                <Box paddingBlockStart="200">
-                                    <ButtonGroup variant="segmented">
-                                        <Button pressed={!isYearly} onClick={() => setIsYearly(false)}>Monthly</Button>
-                                        <Button pressed={isYearly} onClick={() => setIsYearly(true)}>Yearly (20% Off)</Button>
-                                    </ButtonGroup>
-                                </Box>
-                            )}
                         </BlockStack>
                     </Box>
 
@@ -151,8 +140,8 @@ const handleSelectPlan = async (planId: number) => {
                                                 {displayPlans.map((plan) => (
                                                     <th key={plan.id} style={{ padding: '24px', textAlign: 'center', minWidth: '150px', background: plan.handle === 'pro' ? '#f8f9ff' : 'transparent' }}>
                                                         <BlockStack gap="200">
-                                                            <Text variant="headingMd" as="h6" fontWeight="bold">{plan.name}</Text>
-                                                            <Text variant="headingLg" as="p" fontWeight="semibold">
+                                                            <Text variant="headingMd" as="h6" fontWeight="semibold">{plan.name}</Text>
+                                                            <Text variant="headingLg" as="p" fontWeight="medium">
                                                                 {parseFloat(plan.price) === 0 ? 'Free' : `$${plan.price}`}
                                                             </Text>
                                                             <div style={{ marginTop: '12px' }}>
@@ -190,7 +179,7 @@ const handleSelectPlan = async (planId: number) => {
                                                                         <Icon source={MinusIcon} tone="subdued" />
                                                                     )
                                                                 ) : (
-                                                                    <Text as='p' variant="bodyMd" fontWeight="bold">
+                                                                    <Text as='p' variant="bodyMd" fontWeight="medium">
                                                                         {val === -1 ? 'Unlimited' : 
                                                                          feature.keys.includes('storage_limit_mb') ? 
                                                                          (val >= 1000 ? `${val/1000}GB` : `${val}MB`) : 
